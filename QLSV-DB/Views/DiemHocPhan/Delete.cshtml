@@ -1,0 +1,15 @@
+﻿@model DiemHocPhan
+@{
+    ViewData["Title"] = "Xóa điểm học phần";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Xóa học phần</h2>
+
+<h3>Bạn có chắc chắn muốn xóa điểm học phần?</h3>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="submit" value="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa?');" />
+    <a asp-action="Index">Quay lại danh sách</a>
+</form>

@@ -1,0 +1,57 @@
+﻿@using QLPG_a.Models
+@model List<ThongBao>
+@{
+    ViewData["Title"] = "Thông báo";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="fas fa-bell"></i> Thông Báo Mới Nhất
+                </h4>
+            </div>
+        </div>
+
+        @foreach (var ThongBao in Model)
+        {
+            <div class="col-md-12 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">
+                                @if (ThongBao.LoaiThongBao == "quantrong")
+                                {
+                                    <i class="fas fa-exclamation-circle text-danger"></i>
+                                }
+                                else if (ThongBao.LoaiThongBao == "hocvu")
+                                {
+                                    <i class="fas fa-book text-primary"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-info-circle text-secondary"></i>
+                                }
+                                @ThongBao.TieuDe
+                            </h5>
+                            <span class="badge bg-@ThongBao.LayMauBadge() fs-6">
+                                @ThongBao.LayTenLoai()
+                            </span>
+                        </div>
+
+                        <p class="card-text text-muted mb-2">
+                            @ThongBao.NoiDung
+                        </p>
+
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i>
+                            @ThongBao.NgayDang.ToString("dd/MM/yyyy HH:mm")
+                        </small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

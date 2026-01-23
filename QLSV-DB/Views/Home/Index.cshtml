@@ -1,0 +1,110 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+}
+
+<!-- Hero Banner -->
+<div class="jumbotron bg-gradient rounded-3 p-5 mb-5 text-white shadow">
+    <div class="text-center">
+        <h1 class="display-4 fw-bold mb-3 text-primary">
+            <i class="fas fa-dumbbell"></i>
+            Chào mừng đến Hệ Thống Quản Lý Phòng Gym
+        </h1>
+        <p class="lead mb-4 text-white">
+            Quản lý hội viên, gói tập và đăng ký một cách nhanh chóng và trực quan
+        </p>
+        <a href='@Url.Action("Index","Member")' class="btn btn-light btn-lg shadow">
+            <i class="fas fa-users"></i> Danh sách hội viên
+        </a>
+    </div>
+</div>
+
+<!-- 3 Info Cards -->
+<div class="row g-4 mt-3">
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-primary shadow-sm hover-card">
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <i class="fas fa-users fa-4x text-primary"></i>
+                </div>
+                <h5 class="card-title fw-bold">Quản lý Hội Viên</h5>
+                <p class="card-text text-muted">
+                    Xem, thêm, sửa và xóa thông tin hội viên của phòng gym
+                </p>
+                <a href='@Url.Action("Index","Member")' class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i> Mở
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-success shadow-sm hover-card">
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <i class="fas fa-ticket-alt fa-4x text-success"></i>
+                </div>
+                <h5 class="card-title fw-bold">Gói Tập</h5>
+                <p class="card-text text-muted">
+                    Quản lý các gói tập (1 tháng, 3 tháng, 6 tháng, 1 năm) và giá tiền
+                </p>
+                <a href='@Url.Action("Index","Subcription")' class="btn btn-success">
+                    <i class="fas fa-arrow-right"></i> Xem gói
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-warning shadow-sm hover-card">
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <i class="fas fa-clipboard-list fa-4x text-warning"></i>
+                </div>
+                <h5 class="card-title fw-bold">Đăng Ký Gói</h5>
+                <p class="card-text text-muted">
+                    Thực hiện đăng ký gói cho hội viên, tính tổng tiền và thời hạn
+                </p>
+                <a href='@Url.Action("Index","DangKyGoi")' class="btn btn-warning">
+                    <i class="fas fa-arrow-right"></i> Đăng ký
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Info Section -->
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Hướng Dẫn Sử Dụng</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user-plus text-primary"></i> Thêm hội viên:</h6>
+                        <p class="small">Sử dụng mục "Quản lý Hội Viên" để thêm hoặc cập nhật thông tin hội viên.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-receipt text-success"></i> Đăng ký gói:</h6>
+                        <p class="small">Chọn gói phù hợp và thực hiện đăng ký để tự động tính ngày kết thúc và tổng tiền.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .jumbotron {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+    }
+</style>
