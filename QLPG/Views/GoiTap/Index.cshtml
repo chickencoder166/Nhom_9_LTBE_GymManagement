@@ -1,0 +1,51 @@
+﻿@model IEnumerable<QLPG_a.Models.GoiTap>
+
+@{
+    ViewData["Title"] = "Danh sách gói tập";
+    Layout = "_AdminLayout";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Danh sách gói tập
+        </li>
+    </ol>
+</nav>
+
+<h2 class="text-light mb-3">Gói tập</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">
+    Thêm gói tập
+</a>
+
+<table class="table table-dark table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Mã gói</th>
+            <th>Tên gói</th>
+            <th>Thời hạn (tháng)</th>
+            <th>Giá (VNĐ)</th>
+            <th style="width:180px">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MaGoiTap</td>
+                <td>@item.TenGoi</td>
+                <td>@item.ThoiHan</td>
+                <td>@string.Format("{0:N0}", item.Gia)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Sửa</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Xem</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

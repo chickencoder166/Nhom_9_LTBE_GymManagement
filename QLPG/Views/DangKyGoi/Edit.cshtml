@@ -1,0 +1,71 @@
+﻿@model QLPG_a.Models.DangKyGoi
+@{
+    ViewData["Title"] = "Sửa đăng ký";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card p-3 shadow-sm">
+            <h4>Sửa đăng ký</h4>
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div class="mb-3">
+                    <label class="form-label">Mã đăng ký</label>
+                    <input asp-for="MaDangKy" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Hôi viên</label>
+                    <select asp-for="UserId" class="form-select">
+                        @foreach(var u in (List<QLPG_a.Models.User>)ViewData["Users"]!)
+                        {
+                            if(u.Id == Model.UserId)
+                            {
+                                <option value="@u.Id" selected>@u.FullName (@u.UserName)</option>
+                            }
+                            else
+                            {
+                                <option value="@u.Id">@u.FullName (@u.UserName)</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Gói tập</label>
+                    <select asp-for="SubcriptionId" class="form-select">
+                        @foreach(var s in (List<QLPG_a.Models.GoiTap>)ViewData["Subcriptions"]!)
+                        {
+                            if(s.Id == Model.SubcriptionId)
+                            {
+                                <option value="@s.Id" selected>@s.TenGoi - @s.Gia.ToString("N0") VN?</option>
+                            }
+                            else
+                            {
+                                <option value="@s.Id">@s.TenGoi - @s.Gia.ToString("N0") VN?</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ngày bắt đầu</label>
+                    <input asp-for="NgayBatDau" class="form-control" type="date" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ghi chú</label>
+                    <textarea asp-for="GhiChu" class="form-control"></textarea>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <button class="btn btn-primary">Lưu</button>
+                        <a asp-action="Index" class="btn btn-secondary ms-2">Hủy</a>
+                    </div>
+                    <div class="text-muted">Cập nhật số tính lại ngày kết thúc theo thời hạn gói.</div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-4 d-none d-md-block">
+        <div class="form-side-img shadow-sm">
+            <img src="@Url.Content("~/images/phonggym2.jpg")" alt="side">
+        </div>
+    </div>
+</div>

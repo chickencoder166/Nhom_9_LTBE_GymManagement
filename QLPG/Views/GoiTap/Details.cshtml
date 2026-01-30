@@ -1,0 +1,11 @@
+﻿@model QLPG_a.Models.GoiTap
+@{
+    ViewData["Title"] = "Chi tiết gói tập";
+}
+
+<h2>@Model.TenGoi</h2>
+<div class="mb-3">Mã: @Model.MaGoiTap</div>
+<div class="mb-3">Thời hạn: @Model.ThoiHan tháng</div>
+<div class="mb-3">Giá: @Model.Gia.ToString("N0") VND</div>
+<div class="mb-3">Mô tả: @Model.MoTa</div>
+<p><a asp-action="Index" class="btn btn-secondary">Quay lại</a></p>

@@ -1,0 +1,195 @@
+﻿/* QLPG Gym - site.css (single source styles)
+   Desktop-first, responsive second
+*/
+:root{
+    --bg:#0b0b0b;
+    --panel:#0f0f10;
+    --muted:#bfc4c8;
+    --accent:#d31b1b;
+}
+
+/* Reset & base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+    margin:0;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    background:var(--bg);
+    color:#e9ecef;
+    -webkit-font-smoothing:antialiased;
+}
+
+a{color:var(--accent)}
+
+/* Layout spacing */
+main{padding-top:0}
+section{padding-top:3.5rem;padding-bottom:3.5rem}
+
+/* HERO */
+.hero{
+    position:relative;
+    min-height:70vh;
+    display:flex;
+    align-items:center;
+    padding-top:2.5rem;
+    padding-bottom:2.5rem;
+}
+.hero-bg{position:absolute;inset:0;background:url('/images/gym-bg.jpg') center/cover no-repeat;filter:brightness(.45) contrast(.9);z-index:0}
+.hero-inner{position:relative;z-index:2}
+.hero-line-1{color:#fff;margin:0}
+.hero-line-2{margin:0}
+.hero p.lead{color:var(--muted)}
+.hero-card{background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.45));border-radius:12px}
+
+/* SECTIONS */
+.bg-black{background:var(--panel)}
+.container .section-title{margin-bottom:1rem}
+
+/* FEATURES */
+.feature-card{background:transparent;border-radius:12px;padding:1.75rem}
+.feature-card .bi{color:var(--accent);font-size:2.2rem}
+.feature-card .card-title{color:#fff}
+.feature-card .card-text{color:var(--muted)}
+.feature-card h5{margin-bottom:.75rem}
+
+.card.feature-card{transition:transform .18s ease,box-shadow .18s ease}
+.card.feature-card:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(0,0,0,.55)}
+
+/* Feature images */
+.feature-img-wrap{height:200px;overflow:hidden;border-radius:10px 10px 0 0}
+.feature-img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* CTA */
+.btn-danger{background:var(--accent);border-color:var(--accent)}
+.btn-danger:hover{background:#b21616;border-color:#b21616}
+
+/* Footer small */
+footer small, footer .small{color:var(--muted)}
+
+/* Utilities */
+.text-muted{color:var(--muted) !important}
+.text-center .lead{max-width:760px;margin:0 auto}
+
+/* Responsive tweaks */
+@media (max-width: 1200px){
+    .hero{min-height:60vh}
+}
+@media (max-width: 992px){
+    .hero{min-height:56vh}
+}
+@media (max-width: 768px){
+    section{padding-top:2rem;padding-bottom:2rem}
+    .hero{min-height:52vh}
+}
+@media (max-width: 576px){
+    .hero{padding-top:1.5rem;padding-bottom:1.5rem}
+    .hero-bg{background-position:top}
+    .hero .display-3{font-size:2rem}
+    .feature-img-wrap{height:140px}
+}
+
+/* New feature cards with background images */
+.feature-grid { align-items: stretch; }
+.feature-card-bg { position: relative; height: 320px; transition: transform .25s ease, box-shadow .25s ease; }
+.feature-card-bg { position: relative; height: 280px; transition: transform .25s ease, box-shadow .25s ease; overflow: hidden; }
+.feature-card-bg .card-media { position:absolute; inset:0; width:100%; height:100%; }
+.feature-card-bg .card-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+.feature-card-bg .overlay { position:absolute; inset:0; background: rgba(0,0,0,0.45); }
+.feature-card-bg .feature-content{ position:relative; z-index:3; height:100%; }
+.feature-card-bg h5, .feature-card-bg p{ color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+.feature-card-bg:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+.feature-card-bg:hover .card-media img { transform: scale(1.06); transition: transform .5s ease; }
+
+.feature-card-bg .card-media img{ transition: transform .5s ease; }
+
+@media (max-width: 576px){
+    .feature-card-bg { height: 220px; }
+    .feature-grid .col-md-4 { flex: 0 0 100%; max-width: 100%; }
+}
+
+/* Accessibility helpers */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* ===== FIX GALLERY IMAGE SIZE ===== */
+.gallery-card img {
+    width: 100%;
+    height: 260px; /* Ép tất cả ảnh cùng chiều cao */
+    object-fit: cover; /* Cắt ảnh cho đều, không méo */
+    display: block;
+}
+
+/* Running welcome strip */
+.welcome-strip{background:var(--accent);overflow:hidden}
+.welcome-text{color:#fff;font-weight:800;font-size:22px;padding:10px 0;white-space:nowrap;animation:marquee 12s linear infinite}
+@keyframes marquee{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+
+/* Gallery hover + overlay */
+.gallery-card{position:relative;border-radius:12px;overflow:hidden}
+.gallery-card img{transition:transform .5s ease}
+.gallery-card:hover img{transform:scale(1.08)}
+.gallery-card .overlay{position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,.6), rgba(0,0,0,.1));opacity:0;transition:opacity .3s}
+.gallery-card:hover .overlay{opacity:1}
+.gallery-card .overlay .meta{position:absolute;left:20px;bottom:18px;color:#fff}
+
+/* Management pages styles */
+.manage-hero{display:flex;gap:1rem;align-items:center;padding:1rem;border-radius:12px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));margin-bottom:1rem}
+.manage-hero img{width:140px;height:80px;object-fit:cover;border-radius:8px}
+.manage-search{max-width:420px}
+.form-side-img{height:100%;border-radius:12px;overflow:hidden}
+.form-side-img img{width:100%;height:100%;object-fit:cover;display:block}
+.card-action-row{display:flex;gap:.5rem;align-items:center}
+
+/* Nếu dùng Bootstrap card */
+.gallery-card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+/* ===== GALLERY PRO STYLE ===== */
+.gallery-card {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+    .gallery-card img {
+        width: 100%;
+        height: 260px;
+        object-fit: cover;
+        transition: transform .5s ease;
+        display: block;
+    }
+
+    /* Hover zoom */
+    .gallery-card:hover img {
+        transform: scale(1.12);
+    }
+
+    /* Overlay */
+    .gallery-card .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient( to top, rgba(0,0,0,.75), rgba(0,0,0,.15), transparent );
+        opacity: 0;
+        transition: opacity .4s ease;
+        display: flex;
+        align-items: flex-end;
+        padding: 20px;
+    }
+
+    .gallery-card:hover .overlay {
+        opacity: 1;
+    }
+
+.overlay h5 {
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.overlay p {
+    color: #ddd;
+    font-size: 14px;
+    margin: 0;
+}
+

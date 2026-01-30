@@ -1,0 +1,31 @@
+﻿@{
+    ViewData["Title"] = "Hội viên";
+}
+
+<h2 class="mb-3">Hội viên</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">
+    Thêm hội viên
+</a>
+
+<table class="table table-dark table-bordered">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Tên</th>
+            <th>Họ tên</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>user01</td>
+            <td>Nguyễn Văn A</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="1" class="btn btn-warning btn-sm">Sửa</a>
+                <a asp-action="Details" asp-route-id="1" class="btn btn-info btn-sm">Xem</a>
+            </td>
+        </tr>
+    </tbody>
+</table>

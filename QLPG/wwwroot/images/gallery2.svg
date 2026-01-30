@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="g2" x1="0" x2="1">
+      <stop offset="0" stop-color="#171717" />
+      <stop offset="1" stop-color="#262626" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#g2)" />
+  <g fill="#d31b1b" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700">
+    <text x="50" y="120">TRAINERS</text>
+  </g>
+  <g fill="#cfcfcf" font-family="Arial, Helvetica, sans-serif" font-size="22">
+    <text x="50" y="160">Professional trainers and tailored programs</text>
+  </g>
+</svg>

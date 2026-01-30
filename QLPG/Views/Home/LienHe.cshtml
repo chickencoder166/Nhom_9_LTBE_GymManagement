@@ -1,0 +1,92 @@
+﻿@model QLPG_a.Models.ViewModels.FormLienHe
+@{
+    ViewData["Title"] = "Liên hệ";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-envelope"></i> Gửi Liên Hệ</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-action="Contact">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label asp-for="HoTen" class="form-label"></label>
+                        <input asp-for="HoTen" class="form-control" placeholder="Nhập họ và tên của bạn" />
+                        <span asp-validation-for="HoTen" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" placeholder="email@example.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="MaSinhVien" class="form-label"></label>
+                        <input asp-for="MaSinhVien" class="form-control" placeholder="VD: 1971020000 (không bắt buộc)" />
+                        <span asp-validation-for="MaSinhVien" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ChuDe" class="form-label"></label>
+                        <input asp-for="ChuDe" class="form-control" placeholder="Nhập chủ đề liên hệ" />
+                        <span asp-validation-for="ChuDe" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="NoiDung" class="form-label"></label>
+                        <textarea asp-for="NoiDung" class="form-control" rows="5" 
+                                  placeholder="Nhập nội dung chi tiết..."></textarea>
+                        <span asp-validation-for="NoiDung" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> Gửi liên hệ
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Thông Tin Liên Hệ</h5>
+            </div>
+            <div class="card-body">
+                <p><i class="fas fa-map-marker-alt text-danger"></i> <strong>Địa chỉ:</strong><br />
+                    Số 1 phố Xốm, phường Phú Lương, quận Hà Đông, thành phố Hà Nội</p>
+                <p><i class="fas fa-phone text-success"></i> <strong>Điện thoại:</strong><br />
+                    0961.595599
+                </p>
+                <p><i class="fas fa-envelope text-primary"></i> <strong>Email:</strong><br />
+                    dnu@dainam.edu.vn
+                </p>
+                <p><i class="fas fa-clock text-warning"></i> <strong>Giờ làm việc:</strong><br />
+                    Thứ 2 - Thứ 6: 7:30 - 16:30<br />
+                    Thứ 7: 7:30 - 11:30</p>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-question-circle"></i> Câu Hỏi Thường Gặp</h5>
+            </div>
+            <div class="card-body">
+                <p class="small"><strong>Q: Làm sao để xem điểm?</strong><br />
+                    A: Vào mục "Tra cứu điểm" và nhập mã SV</p>
+                <p class="small"><strong>Q: Quên mật khẩu làm gì?</strong><br />
+                    A: Liên hệ phòng Đào tạo để được hỗ trợ</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

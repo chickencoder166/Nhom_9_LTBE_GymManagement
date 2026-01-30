@@ -1,0 +1,13 @@
+/* Admin-specific styles removed - admin UI inherits from site.css for consistency.
+   Keep this file only if you need extra admin overrides. Currently it's minimal. */
+
+/* Small helper adjustments used by admin layout */
+.wrapper { display: flex; min-height: 100vh; }
+.sidebar { width: 250px; }
+.main-content { margin-left: 250px; width: calc(100% - 250px); }
+
+@media (max-width: 768px) {
+    .sidebar { margin-left: -250px; }
+    .sidebar.show { margin-left: 0; }
+    .main-content { margin-left: 0; width: 100%; }
+}

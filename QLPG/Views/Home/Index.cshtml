@@ -1,0 +1,156 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- HERO -->
+<!-- Running welcome strip -->
+<div class="welcome-strip text-center">
+        <div class="welcome-text">
+            <i class="fa-solid fa-fire text-warning me-2" aria-hidden="true"></i>
+            Chào mừng đến với <strong>phòng gym đẳng cấp 5 sao</strong>
+        </div>
+</div>
+
+<section class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="container hero-inner">
+        <div class="row align-items-center">
+            <div class="col-lg-7 text-lg-start text-center">
+                <h1 class="display-3 fw-bold hero-line-1">NO PAIN</h1>
+                <h2 class="display-3 fw-bold text-danger hero-line-2">NO GAIN</h2>
+                <p class="lead text-muted mt-3">Phần mềm quản lý phòng gym chuyên nghiệp — quản lý hội viên, gói tập và lịch huấn luyện một cách dễ dàng.</p>
+                <div class="mt-4">
+                    <a class="btn btn-danger btn-lg me-2" asp-controller="Account" asp-action="Register">Đăng ký ngay</a>
+                    <a class="btn btn-outline-light btn-lg" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                </div>
+            </div>
+
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-card p-4 rounded-3 shadow-lg">
+                    <img src="~/images/gym-bg.jpg" alt="Gym" class="img-fluid rounded-2">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Image modal (lightbox) -->
+<div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-transparent border-0">
+      <div class="modal-body p-0 position-relative">
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+        <img src="" id="modalImage" class="w-100 rounded-3" alt="Preview">
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            var modal = document.getElementById('imgModal');
+            modal.addEventListener('show.bs.modal', function (event) {
+                var trigger = event.relatedTarget;
+                var img = trigger.getAttribute('data-img');
+                var modalImg = document.getElementById('modalImage');
+                modalImg.src = img;
+            });
+        });
+    </script>
+}
+
+<!-- FEATURES -->
+<section class="py-5 bg-black">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3 class="text-danger fw-bold">Tính năng nổi bật</h3>
+            <p class="text-muted">Các công cụ quản lý giúp phòng gym vận hành hiệu quả.</p>
+        </div>
+
+        <div class="row g-4 feature-grid">
+            <div class="col-12 col-md-4">
+                <a asp-controller="User" asp-action="Index" class="feature-card-link text-decoration-none d-block">
+                    <div class="feature-card-bg rounded-3 overflow-hidden shadow-sm">
+                        <div class="card-media">
+                            <img src="@Url.Content("~/images/about-img.jpg")" alt="Quản lý hội viên" loading="lazy">
+                        </div>
+                        <div class="overlay"></div>
+                        <div class="feature-content p-4 d-flex flex-column justify-content-end h-100">
+                            <h5 class="text-white fw-bold">Quản lý hội viên</h5>
+                            <p class="mb-0 text-white-50">Hồ sơ hội viên, lịch sử thanh toán và theo dõi tiến độ.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <a asp-controller="GoiTap" asp-action="Index" class="feature-card-link text-decoration-none d-block">
+                    <div class="feature-card-bg rounded-3 overflow-hidden shadow-sm">
+                        <div class="card-media">
+                            <img src="@Url.Content("~/images/banner2.jpg")" alt="Quản lý gói tập" loading="lazy">
+                        </div>
+                        <div class="overlay"></div>
+                        <div class="feature-content p-4 d-flex flex-column justify-content-end h-100">
+                            <h5 class="text-white fw-bold">Quản lý gói tập</h5>
+                            <p class="mb-0 text-white-50">Tạo gói tập, quản lý đăng ký và thanh toán.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <a asp-controller="DangKyGoi" asp-action="Index" class="feature-card-link text-decoration-none d-block">
+                    <div class="feature-card-bg rounded-3 overflow-hidden shadow-sm">
+                        <div class="card-media">
+                            <img src="@Url.Content("~/images/about-us-bg.jpg")" alt="Lịch huấn luyện" loading="lazy">
+                        </div>
+                        <div class="overlay"></div>
+                        <div class="feature-content p-4 d-flex flex-column justify-content-end h-100">
+                            <h5 class="text-white fw-bold">Lịch huấn luyện</h5>
+                            <p class="mb-0 text-white-50">Lập lịch huấn luyện cá nhân và nhóm cho huấn luyện viên (HLV) và hội viên.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- GALLERY -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3 class="text-danger fw-bold">Bộ sưu tập ảnh</h3>
+            <p class="text-muted">Khám phá không gian phòng tập và trang thiết bị hiện đại của chúng tôi.</p>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-4">
+                <div class="card gallery-card overflow-hidden border-0 shadow-sm">
+                    <img src="@Url.Content("~/images/phonggym2.jpg")" alt="Phòng gym 1" class="img-fluid" />
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <div class="card gallery-card overflow-hidden border-0 shadow-sm">
+                    <img src="@Url.Content("~/images/phonggym1.jpg")" alt="Phòng gym 2" class="img-fluid" />
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <div class="card gallery-card overflow-hidden border-0 shadow-sm">
+                    <img src="@Url.Content("~/images/phonggym3.jpg")" alt="Phòng gym 3" class="img-fluid" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5 bg-black">
+    <div class="container text-center">
+        <h4 class="fw-bold">Sẵn sàng để nâng tầm phòng tập của bạn?</h4>
+        <p class="text-muted">Dùng thử ngay hôm nay hoặc liên hệ để được tư vấn.</p>
+        <a class="btn btn-danger btn-lg" asp-controller="Account" asp-action="Register">Bắt đầu</a>
+    </div>
+</section>

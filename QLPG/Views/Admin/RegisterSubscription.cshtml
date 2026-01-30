@@ -1,0 +1,43 @@
+﻿@model QLPG_a.Models.DangKyGoi
+@{
+    ViewData["Title"] = "Đăng ký gói tập cho hội viên";
+}
+
+<h2>Đăng ký gói cho hội viên</h2>
+<form asp-action="RegisterSubscription" method="post" asp-controller="Admin">
+    <div class="mb-3">
+        <label class="form-label">Mã Đăng ký</label>
+        <input asp-for="MaDangKy" class="form-control" />
+        <span asp-validation-for="MaDangKy" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Chọn hội viên</label>
+        <select asp-for="UserId" class="form-select">
+            <option value="">-- Chọn --</option>
+            @foreach(var u in (List<QLPG_a.Models.User>)ViewBag.Users!){
+                <option value="@u.Id">@u.FullName (@u.UserName)</option>
+            }
+        </select>
+        <span asp-validation-for="UserId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Chọn gói</label>
+        <select asp-for="SubcriptionId" class="form-select">
+            <option value="">-- Chọn --</option>
+            @foreach(var s in (List<QLPG_a.Models.GoiTap>)ViewBag.Subcriptions!){
+                <option value="@s.Id">@s.TenGoi - @s.Gia.ToString("N0") VND</option>
+            }
+        </select>
+        <span asp-validation-for="SubcriptionId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Ngày bắt đầu</label>
+        <input asp-for="NgayBatDau" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+        <span asp-validation-for="NgayBatDau" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Ghi chú</label>
+        <textarea asp-for="GhiChu" class="form-control"></textarea>
+    </div>
+    <button class="btn btn-primary">Đăng ký</button>
+</form>
