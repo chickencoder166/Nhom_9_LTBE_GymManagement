@@ -1,47 +1,73 @@
-﻿using QLPG_a.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using QLPG_a.Configuration;
+using QLPG_a.Data;
+using QLPG_a.Data.Extensions;
+using QLPG_a.Middleware;
+using QLPG_a.Models;
+using QLPG_a.Services;
+
+DotEnvLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseUrls("http://0.0.0.0:5175");
+
 // Thêm services
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddApplicationDbContext(builder.Configuration);
+builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IDangKiGoiService, DangKiGoiService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IHomeService, HomeService>();
+builder.Services.AddScoped<ILookupService, LookupService>();
+builder.Services.AddScoped<ICrudService<GoiTap>, EfCrudService<GoiTap>>();
+builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
-// Sao chép phần này vào cấu hình Program.cs
-// Cấu hình Cookie Authentication -> Nếu không có Cookie xác thực
-// --> Chuyển sang đường dẫn đăng nhập --> /Account/Login
+// Cấu hình Cookie Authentication
 builder.Services.AddAuthentication("MyCookie")
     .AddCookie("MyCookie", options =>
     {
         options.LoginPath = "/Account/Login";
-        // Không có AccessDeniedPath trong dự án này
     });
-// 1. Đăng ký Controller cho API
-builder.Services.AddControllers();
-
-// 2. Đăng ký Swagger
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.Services.InitializeDatabase();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+var configuredUrls = builder.Configuration["ASPNETCORE_URLS"]
+    ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")
+    ?? "http://0.0.0.0:5175";
+var hasHttpsEndpoint = configuredUrls.Contains("https://", StringComparison.OrdinalIgnoreCase);
+
 // Middleware pipeline
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
 
-app.UseHttpsRedirection();
+if (hasHttpsEndpoint)
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 app.UseRouting();
 
-// Copy phần này
-// Đăng ký sử dụng xác thực
-// Thứ tự quan trọng: Authentication → Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 

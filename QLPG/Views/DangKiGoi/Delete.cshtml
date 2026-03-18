@@ -1,0 +1,37 @@
+@model QLPG_a.Models.DangKiGoi
+
+@{
+    ViewData["Title"] = "Xóa đăng ký gói";
+}
+
+<h2 class="mb-3">Xóa đăng ký gói</h2>
+
+<div class="alert alert-warning">
+    Bạn có chắc muốn xóa đăng ký này không?
+</div>
+
+<div class="card p-3 shadow-sm mb-3">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Mã đăng ký</dt>
+        <dd class="col-sm-9">@Model.MaDangKy</dd>
+
+        <dt class="col-sm-3">Hội viên</dt>
+        <dd class="col-sm-9">@Model.Member?.FullName</dd>
+
+        <dt class="col-sm-3">Gói tập</dt>
+        <dd class="col-sm-9">@Model.GoiTap?.TenGoi</dd>
+
+        <dt class="col-sm-3">Ngày bắt đầu</dt>
+        <dd class="col-sm-9">@Model.NgayBatDau.ToString("dd/MM/yyyy")</dd>
+
+        <dt class="col-sm-3">Ngày kết thúc</dt>
+        <dd class="col-sm-9">@Model.NgayKetThuc.ToString("dd/MM/yyyy")</dd>
+    </dl>
+</div>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Hủy</a>
+</form>

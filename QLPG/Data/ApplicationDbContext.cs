@@ -3,9 +3,9 @@ using QLPG_a.Models;
 
 namespace QLPG_a.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
-        public ApplicationDbContext(DbContextOptions options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
@@ -13,8 +13,8 @@ namespace QLPG_a.Data
         // Gym-related DbSets
         public DbSet<User> Users { get; set; }
         public DbSet<Member> Members { get; set; }
-        public DbSet<GoiTap> Subcriptions { get; set; }
-        public DbSet<DangKyGoi> DangKyGois { get; set; }
+        public DbSet<GoiTap> GoiTaps { get; set; }
+        public DbSet<DangKiGoi> DangKiGois { get; set; }
         public DbSet<ThongBao> ThongBaos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,6 +28,8 @@ namespace QLPG_a.Data
                 entity.Property(e => e.MembershipNumber)
                     .IsRequired()
                     .HasMaxLength(10);
+                // Unique index on MembershipNumber (users)
+                entity.HasIndex(e => e.MembershipNumber).IsUnique();
                 entity.Property(e => e.UserName)
                     .IsRequired()
                     .HasMaxLength(50);
@@ -53,17 +55,17 @@ namespace QLPG_a.Data
             // Member
             modelBuilder.Entity<Member>(entity =>
             {
-                entity.HasKey(e => e.MemberId);
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.MembershipNumber).HasMaxLength(20);
                 entity.Property(e => e.FullName).HasMaxLength(200);
-                entity.Property(e => e.Phone).HasMaxLength(20);
-                entity.Property(e => e.Email).HasMaxLength(100);
-                entity.Property(e => e.Package).HasMaxLength(100);
+                entity.HasIndex(e => e.MembershipNumber);
             });
 
-            // Subcription (Gói tập)
+            // GoiTap (gói tập)
             modelBuilder.Entity<GoiTap>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("GoiTaps");
                 entity.Property(e => e.MaGoiTap)
                     .IsRequired()
                     .HasMaxLength(20);
@@ -78,10 +80,11 @@ namespace QLPG_a.Data
                     .HasMaxLength(1000);
             });
 
-            // DangKyGoi (Đăng ký gói)
-            modelBuilder.Entity<DangKyGoi>(entity =>
+            // DangKiGoi (đăng ký gói)
+            modelBuilder.Entity<DangKiGoi>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.ToTable("DangKiGois");
 
                 entity.Property(e => e.MaDangKy)
                     .IsRequired()
@@ -94,21 +97,26 @@ namespace QLPG_a.Data
 
                 entity.Property(e => e.TongTien)
                     .HasColumnType("decimal(18,2)");
-
                 entity.Property(e => e.TrangThai)
                     .HasMaxLength(50);
 
-                // Relationship with User/Member
-                entity.HasOne(d => d.User)
+                // Concurrency token (RowVersion)
+                entity.Property<byte[]>("RowVersion").IsRowVersion();
+
+                // Relationship with Member
+                entity.HasOne(d => d.Member)
                     .WithMany()
-                    .HasForeignKey(d => d.UserId)
+                    .HasForeignKey(d => d.MemberId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // Relationship with Subcription
-                entity.HasOne(d => d.Subcription)
-                    .WithMany(s => s.DangKyGois)
-                    .HasForeignKey(d => d.SubcriptionId)
+                // Relationship with GoiTap
+                entity.HasOne(d => d.GoiTap)
+                    .WithMany(p => p.DangKiGois)
+                    .HasForeignKey(d => d.GoiTapId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(d => d.MemberId);
+                entity.HasIndex(d => d.GoiTapId);
             });
 
             // ThongBao

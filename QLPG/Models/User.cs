@@ -1,6 +1,6 @@
-﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Http;
 
 namespace QLPG_a.Models
 {
@@ -27,7 +27,8 @@ namespace QLPG_a.Models
         [NotMapped]
         [DataType(DataType.Password)]
         [Display(Name = "Mật khẩu")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu từ 6 đến 100 ký tự")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Mật khẩu từ 8 đến 100 ký tự")]
+        [RegularExpression(@"^(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessage = "Mật khẩu phải có ít nhất 8 ký tự, gồm 1 chữ hoa và 1 chữ số")]
         public string? Password { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập họ tên")]
@@ -51,13 +52,28 @@ namespace QLPG_a.Models
 
         [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         [Display(Name = "Số điện thoại")]
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Số điện thoại phải gồm 10 chữ số")]
-        [StringLength(20)]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Số điện thoại phải gồm đúng 10 chữ số")]
+        [StringLength(10)]
         public string Phone { get; set; } = string.Empty;
 
         [Required]
         [StringLength(20)]
         [Display(Name = "Vai trò")]
         public string Role { get; set; } = "Member"; // Admin or Member
+
+        [StringLength(255)]
+        [Display(Name = "Ảnh đại diện")]
+        public string? AvatarPath { get; set; }
+
+        [NotMapped]
+        [Display(Name = "Tệp ảnh đại diện")]
+        public IFormFile? AvatarFile { get; set; }
+
+        // For password reset flow
+        [StringLength(100)]
+        public string? PasswordResetToken { get; set; }
+
+        public DateTime? PasswordResetExpiry { get; set; }
     }
 }
+

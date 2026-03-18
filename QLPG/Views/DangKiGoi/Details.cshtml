@@ -1,0 +1,66 @@
+﻿@model QLPG_a.Models.DangKiGoi
+@{
+    ViewData["Title"] = "Chi tiết đăng ký";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-headerbg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Chi tiết đăng ký gói tập</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Mã đăng ký</dt>
+                    <dd class="col-sm-8"><strong>@Model.MaDangKy</strong></dd>
+                    <dt class="col-sm-4">Hội viên</dt>
+                    <dd class="col-sm-8">@Model.Member?.FullName</dd>
+                    <dt class="col-sm-4">Gói tập</dt>
+                    <dd class="col-sm-8">@Model.GoiTap?.TenGoi</dd>
+                    <dt class="col-sm-4">Ngày bắt đầu</dt>
+                    <dd class="col-sm-8">@Model.NgayBatDau.ToString("dd/MM/yyyy")</dd>
+                    <dt class="col-sm-4">Ngày kết thúc</dt>
+                    <dd class="col-sm-8">@Model.NgayKetThuc.ToString("dd/MM/yyyy")</dd>
+                    <dt class="col-sm-4">Tổng tiền</dt>
+                    <dd class="col-sm-8">@Model.TongTien.ToString("N0") VNĐ</dd>
+                    <dt class="col-sm-4">Trạng thái</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge @(Model.TrangThai == "Đang hoạt động" ? "bg-success" : "bg-secondary")">
+                            @Model.TrangThai
+                        </span>
+                    </dd>
+                    @if (!string.IsNullOrWhiteSpace(Model.GhiChu))
+                    {
+                        <dt class="col-sm-4">Ghi chú</dt>
+                        <dd class="col-sm-8">@Model.GhiChu</dd>
+                    }
+                </dl>
+            </div>
+            <div class="card-footerbg-dark text-white">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit"></i> Sửa
+                </a>
+                <a asp-action="Index" class="btn btn-secondary btn-sm ms-2">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-headerbg-dark text-white">
+                <h6 class="mb-0"><i class="fas fa-qrcode me-2"></i>Mã QR đăng ký</h6>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.QrCodeBase64 != null)
+                {
+                    <img src="data:image/png;base64,@ViewBag.QrCodeBase64"
+                         alt="QR Code" class="img-fluid" style="max-width:220px;" />
+                    <p class="text-muted small mt-2">Quét mã để xem thông tin đăng ký</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

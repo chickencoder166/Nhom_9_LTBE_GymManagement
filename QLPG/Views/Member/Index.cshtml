@@ -1,0 +1,53 @@
+@model IEnumerable<QLPG_a.Models.ViewModels.MemberViewModel>
+@{
+    ViewData["Title"] = "Danh sách hội viên";
+    var filterStatus = (ViewData["FilterStatus"]?.ToString() ?? "all").ToLowerInvariant();
+    var query = ViewData["Query"]?.ToString() ?? string.Empty;
+}
+
+<h2 class="mb-3">Danh sách hội viên</h2>
+
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-5">
+        <input type="text" name="q" value="@query" class="form-control" placeholder="Tìm theo tên, SĐT, mã hội viên" />
+    </div>
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="all" selected="@(filterStatus == "all")">Tất cả</option>
+            <option value="active" selected="@(filterStatus == "active")">Đang hoạt động</option>
+            <option value="expired" selected="@(filterStatus == "expired")">Hết hạn</option>
+        </select>
+    </div>
+    <div class="col-md-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Lọc</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Đặt lại</a>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle text-white">
+        <thead>
+            <tr>
+                <th>Mã hội viên</th>
+                <th>Họ tên</th>
+                <th>SĐT</th>
+                <th>Gói hiện tại</th>
+                <th>Ngày hết hạn</th>
+                <th>Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MembershipNumber</td>
+                <td>@item.FullName</td>
+                <td>@item.Phone</td>
+                <td>@(item.CurrentPackageName ?? "—")</td>
+                <td>@(item.EndDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                <td>@item.Status</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

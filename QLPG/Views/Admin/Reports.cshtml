@@ -1,159 +1,126 @@
-﻿@{
+@model QLPG_a.Models.ViewModels.ReportsViewModel
+@using System.Text.Json
+@{
     ViewData["Title"] = "Báo cáo thống kê";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var revenueLabels = Model.Revenues.Select(r => $"{r.Month:00}/{r.Year}").ToList();
+    var revenueTotals = Model.Revenues.Select(r => r.Total).ToList();
+    var topLabels = Model.TopPackages.Select(p => p.PackageName).ToList();
+    var topCounts = Model.TopPackages.Select(p => p.RegistrationCount).ToList();
 }
 
-<h2 class="mb-4"><i class="fas fa-chart-bar"></i> Báo Cáo Thống Kê</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fas fa-chart-bar"></i> Báo cáo thống kê</h2>
+    <div>
+        <a asp-action="ExportMembersExcel" class="btn btn-success btn-sm me-2">
+            <i class="fas fa-file-excel"></i> Xuất danh sách hội viên
+        </a>
+        <a asp-action="ExportRevenueExcel" class="btn btn-success btn-sm">
+            <i class="fas fa-file-excel"></i> Xuất báo cáo doanh thu
+        </a>
+    </div>
+</div>
 
-<!-- Statistics Overview -->
 <div class="row g-4 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card border-0 shadow-sm text-center">
             <div class="card-body">
-                <i class="fas fa-users fa-3x text-primary mb-3"></i>
-                <h3 class="fw-bold">1,234</h3>
-                <p class="text-muted mb-0">Tổng Sinh Viên</p>
+                <i class="fas fa-user-check fa-3x text-success mb-3"></i>
+                <h3 class="fw-bold">@Model.ActiveMembers</h3>
+                <p class="text-muted mb-0">Hội viên đang hoạt động</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card border-0 shadow-sm text-center">
             <div class="card-body">
-                <i class="fas fa-book fa-3x text-success mb-3"></i>
-                <h3 class="fw-bold">45</h3>
-                <p class="text-muted mb-0">Môn Học</p>
+                <i class="fas fa-user-clock fa-3x text-danger mb-3"></i>
+                <h3 class="fw-bold">@Model.ExpiredMembers</h3>
+                <p class="text-muted mb-0">Hội viên hết hạn</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card border-0 shadow-sm text-center">
             <div class="card-body">
-                <i class="fas fa-star fa-3x text-warning mb-3"></i>
-                <h3 class="fw-bold">8.5</h3>
-                <p class="text-muted mb-0">Điểm TB Chung</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm text-center">
-            <div class="card-body">
-                <i class="fas fa-percentage fa-3x text-info mb-3"></i>
-                <h3 class="fw-bold">95%</h3>
-                <p class="text-muted mb-0">Tỷ Lệ Đậu</p>
+                <i class="fas fa-coins fa-3x text-warning mb-3"></i>
+                <h3 class="fw-bold">@Model.Revenues.Sum(x => x.Total).ToString("N0")</h3>
+                <p class="text-muted mb-0">Tổng doanh thu thống kê (VNĐ)</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Charts -->
+<div class="row g-4 mb-4">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-headerbg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> Doanh thu theo tháng</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-headerbg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Trạng thái hội viên</h5>
+            </div>
+            <div class="card-body d-flex justify-content-center">
+                <canvas id="memberStatusChart" style="max-height:200px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4">
     <div class="col-md-6">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Phân Bố Sinh Viên Theo Lớp</h5>
+            <div class="card-headerbg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-medal"></i> Top 3 gói tập</h5>
             </div>
             <div class="card-body">
-                <canvas id="classDistributionChart" height="300"></canvas>
+                <canvas id="topPackagesChart" height="200"></canvas>
             </div>
         </div>
     </div>
 
     <div class="col-md-6">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="fas fa-chart-line"></i> Điểm Trung Bình Theo Môn</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="gradeDistributionChart" height="300"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Kết Quả Học Tập Theo Học Kỳ</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="semesterResultsChart" height="150"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Top Students -->
-<div class="row g-4 mt-2">
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="fas fa-trophy text-warning"></i> Top 10 Sinh Viên Xuất Sắc</h5>
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Chi tiết top gói tập</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-sm">
+                    <table class="table table-striped align-middle text-white">
                         <thead>
                             <tr>
-                                <th>Hạng</th>
-                                <th>Mã SV</th>
-                                <th>Họ Tên</th>
-                                <th>Điểm TB</th>
+                                <th>#</th>
+                                <th>Gói tập</th>
+                                <th>Số lượt ĐK</th>
+                                <th>Doanh thu</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><span class="badge bg-warning">1</span></td>
-                                <td>SV001</td>
-                                <td>Nguyễn Văn A</td>
-                                <td><strong>9.5</strong></td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-secondary">2</span></td>
-                                <td>SV002</td>
-                                <td>Trần Thị B</td>
-                                <td><strong>9.3</strong></td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-secondary">3</span></td>
-                                <td>SV003</td>
-                                <td>Lê Văn C</td>
-                                <td><strong>9.1</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="fas fa-exclamation-triangle text-danger"></i> Sinh Viên Cần Chú Ý</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Mã SV</th>
-                                <th>Họ Tên</th>
-                                <th>Điểm TB</th>
-                                <th>Ghi Chú</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>SV100</td>
-                                <td>Phạm Văn X</td>
-                                <td><span class="text-danger">4.5</span></td>
-                                <td><span class="badge bg-danger">Cảnh báo học vụ</span></td>
-                            </tr>
-                            <tr>
-                                <td>SV101</td>
-                                <td>Hoàng Thị Y</td>
-                                <td><span class="text-warning">5.2</span></td>
-                                <td><span class="badge bg-warning">Yếu</span></td>
-                            </tr>
+                        @if (Model.TopPackages.Any())
+                        {
+                            @for (var i = 0; i < Model.TopPackages.Count; i++)
+                            {
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@Model.TopPackages[i].PackageName</td>
+                                    <td>@Model.TopPackages[i].RegistrationCount</td>
+                                    <td>@Model.TopPackages[i].Revenue.ToString("N0") VNĐ</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="4" class="text-center text-muted">Chưa có dữ liệu.</td></tr>
+                        }
                         </tbody>
                     </table>
                 </div>
@@ -165,44 +132,56 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        new Chart(document.getElementById('classDistributionChart'), {
-            type: 'pie',
+        const revenueLabels = @Html.Raw(JsonSerializer.Serialize(revenueLabels));
+        const revenueTotals = @Html.Raw(JsonSerializer.Serialize(revenueTotals));
+        const topLabels = @Html.Raw(JsonSerializer.Serialize(topLabels));
+        const topCounts = @Html.Raw(JsonSerializer.Serialize(topCounts));
+
+        // Line chart: revenue by month
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
             data: {
-                labels: ['CNTT01', 'CNTT02', 'KTPM01', 'KTPM02', 'KHMT01'],
+                labels: revenueLabels,
                 datasets: [{
-                    data: [250, 230, 200, 220, 210],
-                    backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1']
+                    label: 'Doanh thu (VNĐ)',
+                    data: revenueTotals,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13,110,253,0.15)',
+                    fill: true,
+                    tension: 0.3
                 }]
-            }
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
         });
 
-        new Chart(document.getElementById('gradeDistributionChart'), {
+        // Pie chart: active vs expired members
+        new Chart(document.getElementById('memberStatusChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Đang hoạt động', 'Hết hạn'],
+                datasets: [{
+                    data: [@Model.ActiveMembers, @Model.ExpiredMembers],
+                    backgroundColor: ['#198754', '#dc3545']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // Bar chart: top packages
+        new Chart(document.getElementById('topPackagesChart'), {
             type: 'bar',
             data: {
-                labels: ['Toán', 'Lý', 'Hóa', 'Anh', 'Tin'],
+                labels: topLabels,
                 datasets: [{
-                    label: 'Điểm TB',
-                    data: [7.5, 8.0, 7.8, 8.5, 9.0],
-                    backgroundColor: '#0d6efd'
+                    label: 'Số đăng ký',
+                    data: topCounts,
+                    backgroundColor: ['#0d6efd', '#198754', '#ffc107']
                 }]
             },
             options: {
-                scales: {
-                    y: { beginAtZero: true, max: 10 }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('semesterResultsChart'), {
-            type: 'line',
-            data: {
-                labels: ['HK1-2023', 'HK2-2023', 'HK1-2024', 'HK2-2024', 'HK1-2025'],
-                datasets: [{
-                    label: 'Điểm TB',
-                    data: [7.2, 7.5, 7.8, 8.0, 8.3],
-                    borderColor: '#0d6efd',
-                    tension: 0.4
-                }]
+                indexAxis: 'y',
+                scales: { x: { beginAtZero: true } },
+                plugins: { legend: { display: false } }
             }
         });
     </script>

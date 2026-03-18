@@ -1,16 +1,16 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LabToChucWebsite.Models.ViewModels
+namespace QLPG_a.Models.ViewModels
 {
     public class LoginViewModel
     {
         [Required]
         [DisplayName("Tài khoản")]
-        public string UserName { get; set; } = string.Empty;
+        public required string UserName { get; set; } = string.Empty;
 
         [DisplayName("Mật khẩu")]
         [Required, DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
+        public required string Password { get; set; } = string.Empty;
     }
 }

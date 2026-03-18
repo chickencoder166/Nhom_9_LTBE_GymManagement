@@ -5,6 +5,8 @@
 
 <h2>Thêm gói tập</h2>
 <form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="mb-3">
         <label class="form-label">Mã gói</label>
         <input asp-for="MaGoiTap" class="form-control" />

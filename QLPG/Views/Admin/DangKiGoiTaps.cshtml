@@ -1,0 +1,31 @@
+@model IEnumerable<QLPG_a.Models.GoiTap>
+@{
+    ViewData["Title"] = "Quản lý gói tập";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2 class="mb-3">Quản lý gói tập</h2>
+
+<div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle text-white">
+        <thead>
+            <tr>
+                <th>Mã gói</th>
+                <th>Tên gói</th>
+                <th>Thời hạn</th>
+                <th>Giá</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MaGoiTap</td>
+                <td>@item.TenGoi</td>
+                <td>@item.ThoiHan tháng</td>
+                <td>@item.Gia.ToString("N0") VNĐ</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

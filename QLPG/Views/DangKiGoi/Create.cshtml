@@ -1,0 +1,66 @@
+﻿@model QLPG_a.Models.DangKiGoi
+@{
+    ViewData["Title"] = "Tạo đăng ký gói";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card p-3 shadow-sm">
+            <h4>Tạo đăng ký gói mới</h4>
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="mb-3">
+                    <label class="form-label">Mã đăng ký</label>
+                    <input asp-for="MaDangKy" class="form-control" />
+                    <span asp-validation-for="MaDangKy" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Hội viên</label>
+                    <select asp-for="MemberId" class="form-select">
+                        <option value="">-- Chọn hội viên --</option>
+                        @foreach(var m in (List<QLPG_a.Models.Member>)ViewData["Members"]!)
+                        {
+                            <option value="@m.Id">@m.FullName (@m.MembershipNumber)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Gói tập</label>
+                    <select asp-for="GoiTapId" class="form-select">
+                        <option value="">-- Chọn gói --</option>
+                        @foreach(var g in (List<QLPG_a.Models.GoiTap>)ViewData["GoiTaps"]!)
+                        {
+                            <option value="@g.Id">@g.TenGoi - @g.Gia.ToString("N0") VND</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Ngày bắt đầu</label>
+                    <input asp-for="NgayBatDau" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Ghi chú</label>
+                    <textarea asp-for="GhiChu" class="form-control"></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <button class="btn btn-primary">Lưu</button>
+                        <a asp-action="Index" class="btn btn-secondary ms-2">Hủy</a>
+                    </div>
+                    <div class="text-muted">Lưu ý: Khi tạo đăng ký mới, gói hiện tại (nếu có) sẽ chuyển vào  trạng thái Hết hạn.</div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-4 d-none d-md-block">
+        <div class="form-side-img shadow-sm">
+            <img src="@Url.Content("~/images/phonggym1.jpg")" alt="side">
+        </div>
+    </div>
+</div>

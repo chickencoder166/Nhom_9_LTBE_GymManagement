@@ -1,9 +1,10 @@
 ﻿using QLPG_a.Data;
 using QLPG_a.Models;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace QLPG_a.Data
 {
@@ -11,142 +12,171 @@ namespace QLPG_a.Data
     {
         public static void Initialize(ApplicationDbContext context)
         {
-            // Ensure database exists
-            context.Database.EnsureCreated();
+            context.Database.Migrate();
 
-            // If we already have users or subscriptions, assume seeded
-            if (context.Users.Any() || context.Subcriptions.Any())
+            // Check if data already seeded
+            if (context.Members.Any())
             {
                 return;
             }
 
-            // 1) Seed Subcriptions (5 plans)
-            var subs = new List<GoiTap>
+            var today = DateTime.Today;
+
+            // Seed GoiTaps (plans/packages)
+            var goiTaps = new List<GoiTap>
             {
-                new GoiTap { MaGoiTap = "P1M", TenGoi = "Gói 1 tháng", ThoiHan = 1, Gia = 500000, MoTa = "Gói 1 tháng" },
-                new GoiTap { MaGoiTap = "P3M", TenGoi = "Gói 3 tháng", ThoiHan = 3, Gia = 1400000, MoTa = "Gói 3 tháng" },
-                new GoiTap { MaGoiTap = "P6M", TenGoi = "Gói 6 tháng", ThoiHan = 6, Gia = 2600000, MoTa = "Gói 6 tháng" },
-                new GoiTap { MaGoiTap = "P12M", TenGoi = "Gói 12 tháng", ThoiHan = 12, Gia = 4800000, MoTa = "Gói 12 tháng" },
-                new GoiTap { MaGoiTap = "P2M", TenGoi = "Gói 2 tháng", ThoiHan = 2, Gia = 900000, MoTa = "Gói 2 tháng" }
+                new GoiTap
+                {
+                    MaGoiTap = "GOI_1M",
+                    TenGoi = "Gói 1 tháng",
+                    ThoiHan = 1,
+                    Gia = 100000m,
+                    MoTa = "Gói cơ bản 1 tháng"
+                },
+                new GoiTap
+                {
+                    MaGoiTap = "GOI_3M",
+                    TenGoi = "Gói 3 tháng",
+                    ThoiHan = 3,
+                    Gia = 250000m,
+                    MoTa = "Gói tiết kiệm 3 tháng"
+                },
+                new GoiTap
+                {
+                    MaGoiTap = "GOI_6M",
+                    TenGoi = "Gói 6 tháng",
+                    ThoiHan = 6,
+                    Gia = 500000m,
+                    MoTa = "Gói nâng cao 6 tháng"
+                },
+                new GoiTap
+                {
+                    MaGoiTap = "GOI_12M",
+                    TenGoi = "Gói 12 tháng",
+                    ThoiHan = 12,
+                    Gia = 900000m,
+                    MoTa = "Gói cả năm tiết kiệm"
+                },
+                new GoiTap
+                {
+                    MaGoiTap = "GOI_PT",
+                    TenGoi = "Gói PT 1 tháng",
+                    ThoiHan = 1,
+                    Gia = 250000m,
+                    MoTa = "Gói có huấn luyện viên cá nhân"
+                }
             };
-            context.Subcriptions.AddRange(subs);
+
+            context.GoiTaps.AddRange(goiTaps);
             context.SaveChanges();
 
-            // 2) Seed Users (50 members + 2 admins)
-            var users = new List<User>();
-            users.Add(new User {
-                MembershipNumber = "A0001",
-                UserName = "admin",
-                PasswordHash = "admin",
-                FullName = "Administrator",
-                DateOfBirth = DateTime.Now.AddYears(-30),
-                Role = "Admin",
-                Phone = "0900000000",
-                Email = "admin@qlpg.local"
-            });
-            // create 50 members
-            for (int i = 1; i <= 50; i++)
-            {
-                users.Add(new User
+            var members = Enumerable.Range(1, 50)
+                .Select(i => new Member
                 {
                     MembershipNumber = $"M{i:000}",
-                    UserName = $"member{i:000}",
-                    PasswordHash = "password",
-                    FullName = $"Hội viên {i}",
-                    DateOfBirth = DateTime.Now.AddYears(-20).AddDays(i),
-                    Role = "Member",
-                    Phone = $"09{10000000 + i}",
-                    Email = $"member{i}@example.com"
-                });
-            }
-            context.Users.AddRange(users);
+                    FullName = $"Hội viên {i:000}",
+                    DateOfBirth = new DateTime(1990, 1, 1).AddDays(i * 45),
+                    Email = $"member{i:000}@gym.local",
+                    Phone = $"09{i:00000000}",
+                    JoinDate = today.AddDays(-i * 3),
+                    Package = null
+                })
+                .ToList();
+
+            context.Members.AddRange(members);
             context.SaveChanges();
 
-            // 3) Seed DangKyGoi: 70 registrations (45 active, 25 expired)
-            var rnd = new Random(12345);
-            var allUsers = context.Users.Where(u => u.Role == "Member").ToList();
-            var allSubs = context.Subcriptions.ToList();
+            var registrations = new List<DangKiGoi>();
 
-            var registrations = new List<DangKyGoi>();
-
-            // First ensure 45 distinct users get an active subscription
-            var activeUsers = allUsers.OrderBy(u => rnd.Next()).Take(45).ToList();
-            int dkIndex = 1;
-            foreach (var u in activeUsers)
+            // 45 active registrations
+            for (int i = 0; i < 45; i++)
             {
-                var sub = allSubs[rnd.Next(allSubs.Count)];
-                var start = DateTime.Now.AddDays(-rnd.Next(0, 20)); // started within last 20 days
-                var end = start.AddDays(sub.ThoiHan * 30);
-                registrations.Add(new DangKyGoi
+                var plan = goiTaps[i % goiTaps.Count];
+                var startDate = today.AddDays(-(i % 20));
+                var registration = new DangKiGoi
                 {
-                    MaDangKy = $"DK{dkIndex:000}",
-                    UserId = u.Id,
-                    SubcriptionId = sub.Id,
-                    NgayBatDau = start,
-                    NgayKetThuc = end,
-                    TongTien = sub.Gia,
+                    MaDangKy = $"DK{i + 1:000}",
+                    MemberId = members[i].Id,
+                    GoiTapId = plan.Id,
+                    NgayBatDau = startDate,
+                    NgayKetThuc = startDate.AddDays(plan.ThoiHan * 30),
+                    TongTien = plan.Gia,
                     TrangThai = "Đang hoạt động"
-                });
-                dkIndex++;
+                };
+
+                members[i].Package = plan.TenGoi;
+                registrations.Add(registration);
             }
 
-            // Then create 25 expired registrations (can be for any users)
+            // 25 expired registrations (history for first 25 members)
             for (int i = 0; i < 25; i++)
             {
-                var u = allUsers[rnd.Next(allUsers.Count)];
-                var sub = allSubs[rnd.Next(allSubs.Count)];
-                var start = DateTime.Now.AddDays(-rnd.Next(60, 365));
-                var end = start.AddDays(sub.ThoiHan * 30);
-                registrations.Add(new DangKyGoi
+                var plan = goiTaps[(i + 1) % goiTaps.Count];
+                var startDate = today.AddDays(-((plan.ThoiHan * 30) + 45 + i));
+                registrations.Add(new DangKiGoi
                 {
-                    MaDangKy = $"DK{dkIndex:000}",
-                    UserId = u.Id,
-                    SubcriptionId = sub.Id,
-                    NgayBatDau = start,
-                    NgayKetThuc = end,
-                    TongTien = sub.Gia,
+                    MaDangKy = $"DK{45 + i + 1:000}",
+                    MemberId = members[i].Id,
+                    GoiTapId = plan.Id,
+                    NgayBatDau = startDate,
+                    NgayKetThuc = startDate.AddDays(plan.ThoiHan * 30),
+                    TongTien = plan.Gia,
                     TrangThai = "Hết hạn"
                 });
-                dkIndex++;
             }
 
-            context.DangKyGois.AddRange(registrations);
+            context.DangKiGois.AddRange(registrations);
             context.SaveChanges();
 
-            // 4) Create unique filtered index to ensure each user has at most one active subscription
-            try
+            // Seed admin/member user accounts for demo login
+            if (!context.Users.Any())
             {
-                var createIndexSql = @"
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'UX_ActivePerUser' AND object_id = OBJECT_ID('dbo.DangKyGois'))
-BEGIN
-    CREATE UNIQUE INDEX UX_ActivePerUser ON dbo.DangKyGois(UserId) WHERE TrangThai = 'Đang hoạt động';
-END";
-                context.Database.ExecuteSqlRaw(createIndexSql);
-            }
-            catch
-            {
-                // ignore index creation errors on providers that don't support filtered indexes
-            }
+                var hasher = new PasswordHasher<User>();
 
-            // 5) Create trigger to mark previous active subscriptions as expired when inserting new one
-            try
-            {
-                var createTriggerSql = @"
-IF OBJECT_ID('dbo.tri_ExpireOldOnInsert','TR') IS NULL
-BEGIN
-    EXEC('CREATE TRIGGER dbo.tri_ExpireOldOnInsert ON dbo.DangKyGois AFTER INSERT AS\nBEGIN\n    SET NOCOUNT ON;\n    UPDATE d\n    SET d.TrangThai = ''Hết hạn''\n    FROM dbo.DangKyGois d\n    INNER JOIN inserted i ON d.UserId = i.UserId\n    WHERE d.Id <> i.Id AND (d.TrangThai IS NULL OR d.TrangThai = ''Đang hoạt động'');\nEND')
-END";
-                context.Database.ExecuteSqlRaw(createTriggerSql);
-            }
-            catch
-            {
-                // ignore trigger creation errors on unsupported providers
+                var adminUser = new User
+                {
+                    MembershipNumber = "ADMIN001",
+                    UserName = "admin",
+                    FullName = "Gym Admin",
+                    DateOfBirth = new DateTime(1990, 1, 1),
+                    Gender = "Nam",
+                    Email = "admin@gym.local",
+                    Phone = "0900000000",
+                    Role = "Admin"
+                };
+                adminUser.PasswordHash = hasher.HashPassword(adminUser, "Admin123");
+
+                var memberUser = new User
+                {
+                    MembershipNumber = members[0].MembershipNumber ?? "M001",
+                    UserName = "member001",
+                    FullName = members[0].FullName,
+                    DateOfBirth = members[0].DateOfBirth ?? new DateTime(1995, 1, 1),
+                    Gender = "Nữ",
+                    Email = members[0].Email,
+                    Phone = members[0].Phone ?? "0901111111",
+                    Role = "Member"
+                };
+                memberUser.PasswordHash = hasher.HashPassword(memberUser, "Member123");
+
+                context.Users.AddRange(
+                    adminUser,
+                    memberUser);
+
+                context.SaveChanges();
             }
         }
 
-        internal static void ApplyMigrations(ApplicationDbContext context)
+        public static void ApplyMigrations(ApplicationDbContext context)
         {
-            throw new NotImplementedException();
+            try
+            {
+                context.Database.Migrate();
+            }
+            catch
+            {
+                // Database creation may fail if unavailable
+            }
         }
     }
 }

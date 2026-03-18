@@ -48,7 +48,7 @@ namespace QLPG_a.Migrations
                     b.Property<DateTime>("NgayKetThuc")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("SubcriptionId")
+                    b.Property<int>("DangKiGoiTapId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("TongTien")
@@ -63,7 +63,7 @@ namespace QLPG_a.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SubcriptionId");
+                    b.HasIndex("DangKiGoiTapId");
 
                     b.HasIndex("UserId");
 
@@ -95,7 +95,7 @@ namespace QLPG_a.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("MembershipPlan")
+                    b.Property<string>("MembershipGoiTap")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
@@ -108,7 +108,7 @@ namespace QLPG_a.Migrations
                     b.ToTable("Members");
                 });
 
-            modelBuilder.Entity("QLPG_a.Models.Subcription", b =>
+            modelBuilder.Entity("QLPG_a.Models.DangKiGoiTap", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -139,7 +139,7 @@ namespace QLPG_a.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Subcriptions");
+                    b.ToTable("DangKiGoiTaps");
                 });
 
             modelBuilder.Entity("QLPG_a.Models.ThongBao", b =>
@@ -235,9 +235,9 @@ namespace QLPG_a.Migrations
 
             modelBuilder.Entity("QLPG_a.Models.DangKyGoi", b =>
                 {
-                    b.HasOne("QLPG_a.Models.Subcription", "Subcription")
+                    b.HasOne("QLPG_a.Models.DangKiGoiTap", "DangKiGoiTap")
                         .WithMany("DangKyGois")
-                        .HasForeignKey("SubcriptionId")
+                        .HasForeignKey("DangKiGoiTapId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -247,12 +247,12 @@ namespace QLPG_a.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Subcription");
+                    b.Navigation("DangKiGoiTap");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("QLPG_a.Models.Subcription", b =>
+            modelBuilder.Entity("QLPG_a.Models.DangKiGoiTap", b =>
                 {
                     b.Navigation("DangKyGois");
                 });

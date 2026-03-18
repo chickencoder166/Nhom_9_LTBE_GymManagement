@@ -1,4 +1,3 @@
-﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace QLPG_a.Models
@@ -7,37 +6,35 @@ namespace QLPG_a.Models
     {
         public int Id { get; set; }
 
-        [Display(Name = "Tiêu Đề")]
+        [Required]
+        [StringLength(500)]
         public string TieuDe { get; set; } = string.Empty;
 
-        [Display(Name = "Nội Dung")]
-        public string NoiDung { get; set; } = string.Empty;
+        [StringLength(2000)]
+        public string? NoiDung { get; set; }
 
-        [Display(Name = "Ngày Đăng")]
+        [StringLength(50)]
+        public string? LoaiThongBao { get; set; }
+
         public DateTime NgayDang { get; set; }
-
-        [Display(Name = "Loại Thông Báo")]
-        public string LoaiThongBao { get; set; } = string.Empty;
 
         public string LayMauBadge()
         {
-            return LoaiThongBao switch
+            return LoaiThongBao?.ToLowerInvariant() switch
             {
                 "quantrong" => "danger",
                 "hocvu" => "primary",
-                "chung" => "secondary",
                 _ => "secondary"
             };
         }
 
         public string LayTenLoai()
         {
-            return LoaiThongBao switch
+            return LoaiThongBao?.ToLowerInvariant() switch
             {
-                "quantrong" => "Quan Trọng",
-                "hocvu" => "Học Vụ",
-                "chung" => "Chung",
-                _ => "Chung"
+                "quantrong" => "Quan trọng",
+                "hocvu" => "Học vụ",
+                _ => "Thông báo"
             };
         }
     }

@@ -1,118 +1,166 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using QLPG_a.Data;
+using Microsoft.Extensions.Logging;
 using QLPG_a.Models;
 using QLPG_a.Models.ViewModels;
+using QLPG_a.Services;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using QLPG_a.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace QLPG_a.Controllers
 {
-    // Xác thực controller
+    [Authorize]
     public class AccountController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IAuthService _authService;
+        private readonly ILogger<AccountController> _logger;
+        private readonly IApplicationDbContext _context;
+        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IEmailService _emailService;
 
-        public AccountController(ApplicationDbContext context)
+        public AccountController(IAuthService authService, ILogger<AccountController> logger,
+            IApplicationDbContext context, IPasswordHasher<User> passwordHasher, IEmailService emailService)
         {
+            _authService = authService;
+            _logger = logger;
             _context = context;
+            _passwordHasher = passwordHasher;
+            _emailService = emailService;
         }
 
-        // AllowAnonymous là cho phép truy cập cho người dùng không xác định
         [AllowAnonymous]
-        public IActionResult Register()
-        {
-            return View();
-        }
-        // Xử lý phương thức đăng ký
+        public IActionResult Register() => View();
+
+        [AllowAnonymous]
+        public IActionResult Login() => View();
+
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult Register(RegisterViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
 
-            var hasher = new PasswordHasher<User>();
-
-            var user = new User
+            var result = await _authService.RegisterAsync(model);
+            if (!result.Succeeded)
             {
-                UserName = model.UserName,
-                Role = "User"  // Mặc định là User
-            };
-            if (_context.Users.Any(u => u.UserName == model.UserName))
-            {
-                ModelState.AddModelError("UserName", "Tài khoản đã tồn tại");
+                ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Đăng ký thất bại.");
                 return View(model);
             }
 
-            user.PasswordHash = hasher.HashPassword(user, model.Password);
-
-            _context.Users.Add(user);
-            _context.SaveChanges();
-
-            return RedirectToAction("Login");
+            TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+            return RedirectToAction(nameof(Login));
         }
-        [AllowAnonymous]
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
+
         [HttpPost]
-        [AllowAnonymous] // Cho phép truy cập khi chưa đăng nhập
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            // Validate dữ liệu form
-            if (!ModelState.IsValid)
-                return View(model);
+            if (!ModelState.IsValid) return View(model);
 
-            // Tìm user theo username
-            var user = _context.Users
-                .FirstOrDefault(u => u.UserName == model.UserName);
-
-            if (user == null)
+            var loginResult = await _authService.ValidateLoginAsync(model);
+            if (!loginResult.Succeeded || loginResult.Value == null)
             {
-                ModelState.AddModelError("", "Sai tài khoản");
+                ModelState.AddModelError(string.Empty, loginResult.ErrorMessage ?? "Sai tài khoản hoặc mật khẩu.");
                 return View(model);
             }
 
-            // So sánh mật khẩu (hash)
-            var hasher = new PasswordHasher<User>();
-            var result = hasher.VerifyHashedPassword(
-                user, user.PasswordHash, model.Password);
-
-            if (result != PasswordVerificationResult.Success)
-            {
-                ModelState.AddModelError("", "Sai mật khẩu");
-                return View(model);
-            }
-
-            // Tạo claims để lưu vào cookie xác thực
+            var user = loginResult.Value;
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, user.UserName),
-        new Claim(ClaimTypes.Role, user.Role)
-    };
+            {
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim("UserName", user.UserName),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
+            await HttpContext.SignInAsync("MyCookie",
+                new ClaimsPrincipal(new ClaimsIdentity(claims, "MyCookie")));
 
-            // Scheme phải trùng với cấu hình Authentication
-            var identity = new ClaimsIdentity(claims, "MyCookie");
-            var principal = new ClaimsPrincipal(identity);
-
-            // Đăng nhập: ghi cookie
-            await HttpContext.SignInAsync("MyCookie", principal);
-
-            // Điều hướng theo role
             if (user.Role == "Admin")
-                return RedirectToAction("Index", "Admin");
+                return RedirectToAction("Dashboard", "Admin");
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("MemberDashboard", "Home");
         }
-        // Đăng xuất
+
         [Authorize]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync("MyCookie");
             return RedirectToAction("Login");
+        }
+
+        // ─── Forgot Password ─────────────────────────────────────────────────────
+
+        [AllowAnonymous]
+        public IActionResult ForgotPassword() => View();
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ModelState.AddModelError(string.Empty, "Vui lòng nhập email.");
+                return View();
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user != null)
+            {
+                user.PasswordResetToken = Guid.NewGuid().ToString("N");
+                user.PasswordResetExpiry = DateTime.UtcNow.AddMinutes(30);
+                await _context.SaveChangesAsync();
+
+                var resetLink = Url.Action("ResetPassword", "Account",
+                    new { token = user.PasswordResetToken }, Request.Scheme);
+                await _emailService.SendPasswordResetAsync(email, user.FullName, resetLink!);
+            }
+
+            // Always show success to prevent email enumeration
+            TempData["Success"] = "Nếu email tồn tại, chúng tôi đã gửi liên kết đặt lại mật khẩu.";
+            return RedirectToAction(nameof(Login));
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return RedirectToAction(nameof(Login));
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.PasswordResetToken == token && u.PasswordResetExpiry > DateTime.UtcNow);
+            if (user == null)
+            {
+                TempData["Error"] = "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
+                return RedirectToAction(nameof(Login));
+            }
+            return View(new ResetPasswordViewModel { Token = token });
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.PasswordResetToken == model.Token && u.PasswordResetExpiry > DateTime.UtcNow);
+            if (user == null)
+            {
+                TempData["Error"] = "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
+                return RedirectToAction(nameof(Login));
+            }
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
+            user.PasswordResetToken = null;
+            user.PasswordResetExpiry = null;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Đặt lại mật khẩu thành công! Vui lòng đăng nhập.";
+            return RedirectToAction(nameof(Login));
         }
     }
 }

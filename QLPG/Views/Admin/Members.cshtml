@@ -1,0 +1,134 @@
+@model IEnumerable<QLPG_a.Models.ViewModels.MemberViewModel>
+@{
+    ViewData["Title"] = "Quản lý hội viên";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var filterStatus = (ViewData["FilterStatus"]?.ToString() ?? "all").ToLowerInvariant();
+    var query = ViewData["Query"]?.ToString() ?? string.Empty;
+    var sort = ViewData["Sort"]?.ToString() ?? "name";
+    var dir = ViewData["Dir"]?.ToString() ?? "asc";
+
+    string SortLink(string col)
+    {
+        var newDir = (sort == col && dir == "asc") ? "desc" : "asc";
+        return $"?status={filterStatus}&q={Uri.EscapeDataString(query)}&sort={col}&dir={newDir}";
+    }
+    string SortIcon(string col)
+    {
+        if (sort != col) return "<i class='fas fa-sort text-muted ms-1'></i>";
+        return dir == "asc"
+            ? "<i class='fas fa-sort-up ms-1'></i>"
+            : "<i class='fas fa-sort-down ms-1'></i>";
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Quản lý hội viên</h2>
+    <div>
+        <a asp-controller="User" asp-action="Create" class="btn btn-primary btn-sm me-1">
+            <i class="fas fa-user-plus"></i> Thêm hội viên
+        </a>
+        <a asp-controller="Admin" asp-action="ExportMembersExcel"
+           asp-route-status="@filterStatus" asp-route-q="@query"
+           class="btn btn-success btn-sm">
+            <i class="fas fa-file-excel"></i> Xuất Excel
+        </a>
+    </div>
+</div>
+
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-5">
+        <input type="text" name="q" value="@query" class="form-control"
+               placeholder="Tìm theo tên, SĐT, mã hội viên" />
+    </div>
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="all" selected="@(filterStatus == "all")">Tất cả</option>
+            <option value="active" selected="@(filterStatus == "active")">Đang hoạt động</option>
+            <option value="expired" selected="@(filterStatus == "expired")">Hết hạn</option>
+        </select>
+    </div>
+    <input type="hidden" name="sort" value="@sort" />
+    <input type="hidden" name="dir" value="@dir" />
+    <div class="col-md-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Lọc</button>
+        <a asp-action="Members" class="btn btn-outline-secondary">Đặt lại</a>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle text-white">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã hội viên</th>
+                <th>
+                    <a href="@SortLink("name")" class="text-white text-decoration-none">
+                        Họ tên @Html.Raw(SortIcon("name"))
+                    </a>
+                </th>
+                <th>SĐT</th>
+                <th>Gói hiện tại</th>
+                <th>
+                    <a href="@SortLink("expire")" class="text-white text-decoration-none">
+                        Ngày hết hạn @Html.Raw(SortIcon("expire"))
+                    </a>
+                </th>
+                <th>
+                    <a href="@SortLink("status")" class="text-white text-decoration-none">
+                        Trạng thái @Html.Raw(SortIcon("status"))
+                    </a>
+                </th>
+                <th>
+                    <a href="@SortLink("days")" class="text-white text-decoration-none">
+                        Còn lại @Html.Raw(SortIcon("days"))
+                    </a>
+                </th>
+                <th style="width:160px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MembershipNumber</td>
+                <td>@item.FullName</td>
+                <td>@item.Phone</td>
+                <td>@(item.CurrentPackageName ?? "—")</td>
+                <td>@(item.EndDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                <td>
+                    <span class="badge @(item.Status == "Đang hoạt động" ? "bg-success" : item.Status == "Hết hạn" ? "bg-danger" : "bg-secondary")">
+                        @item.Status
+                    </span>
+                </td>
+                <td>
+                    @if (item.RemainingDays.HasValue)
+                    {
+                        if (item.RemainingDays.Value < 7 && item.RemainingDays.Value >= 0)
+                        {
+                            <span class="text-warning fw-semibold"><i class="fas fa-exclamation-circle"></i> @item.RemainingDays ngày</span>
+                        }
+                        else if (item.RemainingDays.Value < 0)
+                        {
+                            <span class="text-danger">Hết hạn</span>
+                        }
+                        else
+                        {
+                            <span>@item.RemainingDays ngày</span>
+                        }
+                    }
+                    else { <span>—</span> }
+                </td>
+                <td>
+                    <a asp-controller="User" asp-action="Edit" asp-route-id="@item.Id"
+                       class="btn btn-warning btn-sm" title="Sửa"><i class="fas fa-edit"></i></a>
+                    <a asp-controller="Admin" asp-action="RegisterDangKiGoiTap"
+                       class="btn btn-info btn-sm" title="Đăng ký gói"><i class="fas fa-clipboard-list"></i></a>
+                    <a asp-controller="User" asp-action="Delete" asp-route-id="@item.Id"
+                       class="btn btn-danger btn-sm" title="Xóa"><i class="fas fa-trash"></i></a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+<p class="text-muted small">Tổng: @Model.Count() hội viên</p>
+

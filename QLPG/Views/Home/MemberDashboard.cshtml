@@ -1,0 +1,184 @@
+@model QLPG_a.Models.ViewModels.MemberDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard Hội Viên";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+}
+
+<div class="row g-4 mb-4">
+    <!-- Profile Card -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                @if (!string.IsNullOrWhiteSpace(Model.AvatarPath))
+                {
+                    <img src="@Model.AvatarPath" alt="Avatar" class="rounded-circle mb-3"
+                         style="width:90px;height:90px;object-fit:cover;" />
+                }
+                else
+                {
+                    <div class="bg-secondary bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width:90px;height:90px;">
+                        <i class="fas fa-user fa-3x text-secondary"></i>
+                    </div>
+                }
+                <h5 class="fw-bold mb-1">@Model.FullName</h5>
+                <p class="text-muted small mb-1">@(Model.MembershipNumber)</p>
+                @if (!string.IsNullOrWhiteSpace(Model.Email))
+                {
+                    <p class="text-muted small">@Model.Email</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Package Card -->
+    <div class="col-md-8">
+        @if (Model.ActiveSubscription != null)
+        {
+            <div class="card border-0 shadow-sm h-100 border-danger border-2 @(Model.IsExpiringSoon ? "border-warning" : "")">
+                <div class="card-header @(Model.IsExpiringSoon ? "bg-warning" : "bg-danger") text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-dumbbell me-2"></i>
+                        Gói tập hiện tại
+                        @if (Model.IsExpiringSoon)
+                        {
+                            <span class="badge bg-danger ms-2">Sắp hết hạn!</span>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.IsExpiringSoon)
+                    {
+                        <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Cảnh báo:</strong>&nbsp;Gói tập của bạn sắp hết hạn trong <strong>@Model.RemainingDays ngày</strong>. Vui lòng liên hệ với quản lý để gia hạn!
+                        </div>
+                    }
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-dark rounded">
+                                <small class="text-muted d-block">Tên gói</small>
+                                <strong>@(Model.ActiveSubscription.GoiTap?.TenGoi ?? "—")</strong>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-dark rounded">
+                                <small class="text-muted d-block">Trạng thái</small>
+                                <span class="badge bg-success fs-6">Đang hoạt động</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="p-3 bg-dark rounded">
+                                <small class="text-muted d-block">Ngày bắt đầu</small>
+                                <strong>@Model.ActiveSubscription.NgayBatDau.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="p-3 bg-dark rounded">
+                                <small class="text-muted d-block">Ngày hết hạn</small>
+                                <strong>@Model.ActiveSubscription.NgayKetThuc.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="p-3 @(Model.IsExpiringSoon ? "bg-warning bg-opacity-25" : "bg-dark") rounded">
+                                <small class="text-muted d-block">Còn lại</small>
+                                <strong class="@(Model.IsExpiringSoon ? "text-warning" : "text-danger") fs-5">
+                                    @Model.RemainingDays ngày
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-5">
+                    <i class="fas fa-dumbbell fa-4x text-muted mb-3 opacity-50"></i>
+                    <h5 class="text-muted">Bạn chưa có gói tập nào đang hoạt động</h5>
+                    <p class="text-muted small">Liên hệ quản lý để đăng ký gói tập.</p>
+                    <a asp-controller="Home" asp-action="DangKiGois" class="btn btn-danger mt-2">
+                        <i class="fas fa-eye me-1"></i>Xem các gói tập
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Available Packages -->
+@if (Model.AvailablePackages.Any())
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-black">
+            <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Các gói tập hiện có</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                @foreach (var pkg in Model.AvailablePackages)
+                {
+                    <div class="col-sm-6 col-md-4 col-lg-3">
+                        <div class="card border h-100 text-center py-3 px-2">
+                            <i class="fas fa-dumbbell fa-2x text-danger mb-2"></i>
+                            <h6 class="fw-bold">@pkg.TenGoi</h6>
+                            <p class="text-muted small mb-1">Thời hạn: @pkg.ThoiHan tháng</p>
+                            <p class="fw-bold text-danger">@pkg.Gia.ToString("N0") VNĐ</p>
+                            @if (!string.IsNullOrWhiteSpace(pkg.MoTa))
+                            {
+                                <small class="text-muted">@pkg.MoTa</small>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Registration History -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-black">
+        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Lịch sử đăng ký gói tập</h5>
+    </div>
+    <div class="card-body">
+        @if (Model.History.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle table-dark">
+                    <thead class="table-light text-dark">
+                        <tr>
+                            <th>Mã ĐK</th>
+                            <th>Gói tập</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Ngày kết thúc</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var dk in Model.History)
+                        {
+                            <tr>
+                                <td><small class="text-light">@dk.MaDangKy</small></td>
+                                <td>@(dk.GoiTap?.TenGoi ?? "—")</td>
+                                <td>@dk.NgayBatDau.ToString("dd/MM/yyyy")</td>
+                                <td>@dk.NgayKetThuc.ToString("dd/MM/yyyy")</td>
+                                <td>@dk.TongTien.ToString("N0") VNĐ</td>
+                                <td>
+                                    <span class="badge @(dk.TrangThai == "Đang hoạt động" ? "bg-success" : "bg-secondary")">
+                                        @dk.TrangThai
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="text-center text-muted py-4">Chưa có lịch sử đăng ký gói tập.</p>
+        }
+    </div>
+</div>

@@ -35,7 +35,7 @@ namespace QLPG_a.Migrations
                     MembershipNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     FullName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    MembershipPlan = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MembershipGoiTap = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     JoinDate = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -46,7 +46,7 @@ namespace QLPG_a.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Subcriptions",
+                name: "DangKiGoiTaps",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -59,7 +59,7 @@ namespace QLPG_a.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Subcriptions", x => x.Id);
+                    table.PrimaryKey("PK_DangKiGoiTaps", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -91,7 +91,7 @@ namespace QLPG_a.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     MaDangKy = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    SubcriptionId = table.Column<int>(type: "int", nullable: false),
+                    DangKiGoiTapId = table.Column<int>(type: "int", nullable: false),
                     NgayBatDau = table.Column<DateTime>(type: "datetime2", nullable: false),
                     NgayKetThuc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TongTien = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -102,9 +102,9 @@ namespace QLPG_a.Migrations
                 {
                     table.PrimaryKey("PK_DangKyGois", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DangKyGois_Subcriptions_SubcriptionId",
-                        column: x => x.SubcriptionId,
-                        principalTable: "Subcriptions",
+                        name: "FK_DangKyGois_DangKiGoiTaps_DangKiGoiTapId",
+                        column: x => x.DangKiGoiTapId,
+                        principalTable: "DangKiGoiTaps",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -116,9 +116,9 @@ namespace QLPG_a.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_DangKyGois_SubcriptionId",
+                name: "IX_DangKyGois_DangKiGoiTapId",
                 table: "DangKyGois",
-                column: "SubcriptionId");
+                column: "DangKiGoiTapId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DangKyGois_UserId",
@@ -147,7 +147,7 @@ namespace QLPG_a.Migrations
                 name: "Members");
 
             migrationBuilder.DropTable(
-                name: "Subcriptions");
+                name: "DangKiGoiTaps");
 
             migrationBuilder.DropTable(
                 name: "Users");

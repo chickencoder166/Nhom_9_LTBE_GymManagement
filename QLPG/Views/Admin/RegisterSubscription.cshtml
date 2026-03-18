@@ -1,10 +1,12 @@
-﻿@model QLPG_a.Models.DangKyGoi
+﻿@model QLPG_a.Models.DangKiGoi
 @{
     ViewData["Title"] = "Đăng ký gói tập cho hội viên";
 }
 
 <h2>Đăng ký gói cho hội viên</h2>
-<form asp-action="RegisterSubscription" method="post" asp-controller="Admin">
+<form asp-action="RegisterDangKiGoiTap" method="post" asp-controller="Admin">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="mb-3">
         <label class="form-label">Mã Đăng ký</label>
         <input asp-for="MaDangKy" class="form-control" />
@@ -12,23 +14,23 @@
     </div>
     <div class="mb-3">
         <label class="form-label">Chọn hội viên</label>
-        <select asp-for="UserId" class="form-select">
+        <select asp-for="MemberId" class="form-select">
             <option value="">-- Chọn --</option>
-            @foreach(var u in (List<QLPG_a.Models.User>)ViewBag.Users!){
-                <option value="@u.Id">@u.FullName (@u.UserName)</option>
+            @foreach(var m in (List<QLPG_a.Models.Member>)ViewBag.Members!){
+                <option value="@m.Id">@m.FullName (@m.MembershipNumber)</option>
             }
         </select>
-        <span asp-validation-for="UserId" class="text-danger"></span>
+        <span asp-validation-for="MemberId" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label class="form-label">Chọn gói</label>
-        <select asp-for="SubcriptionId" class="form-select">
+        <select asp-for="GoiTapId" class="form-select">
             <option value="">-- Chọn --</option>
-            @foreach(var s in (List<QLPG_a.Models.GoiTap>)ViewBag.Subcriptions!){
-                <option value="@s.Id">@s.TenGoi - @s.Gia.ToString("N0") VND</option>
+            @foreach(var g in (List<QLPG_a.Models.GoiTap>)ViewBag.GoiTaps!){
+                <option value="@g.Id">@g.TenGoi - @g.Gia.ToString("N0") VND</option>
             }
         </select>
-        <span asp-validation-for="SubcriptionId" class="text-danger"></span>
+        <span asp-validation-for="GoiTapId" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label class="form-label">Ngày bắt đầu</label>

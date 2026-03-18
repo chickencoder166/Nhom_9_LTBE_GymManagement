@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using QLPG_a.Data.Repositories;
@@ -17,9 +18,18 @@ namespace QLPG_a.Data.Extensions
             this IServiceCollection services, 
             IConfiguration configuration)
         {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
             services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                if (IsSqliteConnection(connectionString))
+                {
+                    options.UseSqlite(connectionString);
+                    return;
+                }
+
                 options.UseSqlServer(
-                    configuration.GetConnectionString("DefaultConnection"),
+                    connectionString,
                     sqlOptions =>
                     {
                         // Retry on failure
@@ -31,9 +41,22 @@ namespace QLPG_a.Data.Extensions
                         // Command timeout
                         sqlOptions.CommandTimeout(30);
                     }
-                ));
+                );
+            });
 
             return services;
+        }
+
+        private static bool IsSqliteConnection(string? connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                return false;
+            }
+
+            return connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase)
+                || connectionString.EndsWith(".db", StringComparison.OrdinalIgnoreCase)
+                || connectionString.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -52,11 +75,31 @@ namespace QLPG_a.Data.Extensions
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                
-                // Áp dụng Migration hiện tại
+
+                var isSqlite = string.Equals(
+                    context.Database.ProviderName,
+                    "Microsoft.EntityFrameworkCore.Sqlite",
+                    StringComparison.OrdinalIgnoreCase);
+
+                if (isSqlite)
+                {
+                    try
+                    {
+                        // Validate schema quickly; if stale/broken, recreate below.
+                        _ = context.Members.Any();
+                        DbInitializer.Initialize(context);
+                    }
+                    catch
+                    {
+                        context.Database.EnsureDeleted();
+                        DbInitializer.Initialize(context);
+                    }
+
+                    return serviceProvider;
+                }
+
+                // SQL Server flow
                 DbInitializer.ApplyMigrations(context);
-                
-                // Seed data
                 DbInitializer.Initialize(context);
             }
 

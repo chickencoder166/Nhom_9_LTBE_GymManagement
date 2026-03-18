@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QLPG_a.Data;
 using QLPG_a.Models;
 using QLPG_a.Models.ViewModels;
+using QLPG_a.Services;
 using System.Diagnostics;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace QLPG_a.Controllers
 {
@@ -15,97 +11,94 @@ namespace QLPG_a.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _context;
+        private readonly IHomeService _homeService;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(ILogger<HomeController> logger, IHomeService homeService)
         {
             _logger = logger;
-            _context = context;
+            _homeService = homeService;
         }
 
         [AllowAnonymous]
-        // GET: /
         public async Task<IActionResult> Index()
         {
             ViewData["Title"] = "Trang chủ";
 
-            // Basic dashboard info for public home page
-            var totalMembers = await _context.Users.CountAsync();
-            var activeMembers = await _context.DangKyGois
-                .Where(d => d.NgayKetThuc > DateTime.Now && (d.TrangThai == null || d.TrangThai == "Đang hoạt động"))
-                .Select(d => d.UserId)
-                .Distinct()
-                .CountAsync();
+            var result = await _homeService.GetHomeSummaryAsync();
+            if (!result.Succeeded || result.Value == null)
+            {
+                TempData["Error"] = result.ErrorMessage ?? "Không thể tải dữ liệu trang chủ.";
+                return View(Array.Empty<ThongBao>());
+            }
 
-            var latestNotices = await _context.ThongBaos
-                .OrderByDescending(tb => tb.NgayDang)
-                .Take(5)
-                .ToListAsync();
+            ViewBag.TotalMembers = result.Value.TotalMembers;
+            ViewBag.ActiveMembers = result.Value.ActiveMembers;
 
-            ViewBag.TotalMembers = totalMembers;
-            ViewBag.ActiveMembers = activeMembers;
-
-            return View(latestNotices);
+            return View(result.Value.LatestNotices);
         }
 
-        // GET: /Home/Members?status=all|active|expired
+        // GET: /Home/MemberDashboard  — MEMBER ONLY
+        [Authorize(Roles = "Member")]
+        public async Task<IActionResult> MemberDashboard()
+        {
+            ViewData["Title"] = "Dashboard Hội Viên";
+            var userName = User.Identity?.Name ?? string.Empty;
+
+            var result = await _homeService.GetMemberDashboardAsync(userName);
+            if (!result.Succeeded || result.Value == null)
+            {
+                TempData["Error"] = result.ErrorMessage ?? "Không thể tải thông tin hội viên.";
+                return View(new MemberDashboardViewModel());
+            }
+
+            return View(result.Value);
+        }
+
         public async Task<IActionResult> Members(string status = "all")
         {
             ViewData["Title"] = "Danh sách hội viên";
             ViewData["FilterStatus"] = status;
 
-            var users = await _context.Users.AsNoTracking().ToListAsync();
-
-            if (status == "active")
+            var result = await _homeService.GetMembersAsync(status);
+            if (!result.Succeeded || result.Value == null)
             {
-                var activeUserIds = await _context.DangKyGois
-                    .Where(d => d.NgayKetThuc > DateTime.Now && (d.TrangThai == null || d.TrangThai == "Đang hoạt động"))
-                    .Select(d => d.UserId)
-                    .Distinct()
-                    .ToListAsync();
-
-                users = users.Where(u => activeUserIds.Contains(u.Id)).ToList();
-            }
-            else if (status == "expired")
-            {
-                var expiredUserIds = await _context.DangKyGois
-                    .Where(d => d.NgayKetThuc <= DateTime.Now || d.TrangThai == "Hết hạn")
-                    .Select(d => d.UserId)
-                    .Distinct()
-                    .ToListAsync();
-
-                users = users.Where(u => expiredUserIds.Contains(u.Id)).ToList();
+                TempData["Error"] = result.ErrorMessage ?? "Không thể tải danh sách hội viên.";
+                return View(Array.Empty<Member>());
             }
 
-            return View(users);
+            return View(result.Value);
         }
 
-        // GET: /Home/Subcriptions
-        public async Task<IActionResult> Subcriptions()
+        public async Task<IActionResult> DangKiGois()
         {
             ViewData["Title"] = "Các gói tập";
-            var list = await _context.Subcriptions.OrderBy(s => s.TenGoi).ToListAsync();
-            return View(list);
+            var result = await _homeService.GetGoiTapsAsync();
+            if (!result.Succeeded || result.Value == null)
+            {
+                TempData["Error"] = result.ErrorMessage ?? "Không thể tải gói tập.";
+                return View(Array.Empty<GoiTap>());
+            }
+            return View(result.Value);
         }
 
-        // GET: /Home/TinTuc
         public async Task<IActionResult> TinTuc()
         {
             ViewData["Title"] = "Thông báo";
-            var thongBaos = await _context.ThongBaos
-                .OrderByDescending(tb => tb.NgayDang)
-                .ToListAsync();
-            return View(thongBaos);
+            var result = await _homeService.GetThongBaosAsync();
+            if (!result.Succeeded || result.Value == null)
+            {
+                TempData["Error"] = result.ErrorMessage ?? "Không thể tải thông báo.";
+                return View(Array.Empty<ThongBao>());
+            }
+            return View(result.Value);
         }
 
-        // GET: /Home/LienHe
         public IActionResult LienHe()
         {
             ViewData["Title"] = "Liên hệ";
             return View();
         }
 
-        // POST: /Home/LienHe
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult LienHe(FormContact form)
@@ -121,10 +114,7 @@ namespace QLPG_a.Controllers
             return View(form);
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

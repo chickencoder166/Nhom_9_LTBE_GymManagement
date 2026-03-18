@@ -1,53 +1,87 @@
-﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QLPG_a.Data;
+using Microsoft.AspNetCore.Authorization;
 using QLPG_a.Models;
+using QLPG_a.Services;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace QLPG_a.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class GoiTapController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICrudService<GoiTap> _crudService;
 
-        public GoiTapController(ApplicationDbContext context)
+        public GoiTapController(ICrudService<GoiTap> crudService)
         {
-            _context = context;
+            _crudService = crudService;
         }
 
-        [AllowAnonymous]
-        // GET: GoiTap
-        public async Task<IActionResult> Index()
+        // GET: GoiTap?sort=code|name|duration|price&dir=asc|desc&q=...
+        public async Task<IActionResult> Index(string? q = null, string sort = "name", string dir = "asc")
         {
-            var list = await _context.Subcriptions.AsNoTracking().ToListAsync();
-            return View(list);
+            ViewData["Title"] = "Danh sách gói tập";
+            ViewData["Query"] = q;
+            ViewData["Sort"] = sort;
+            ViewData["Dir"] = dir;
+
+            var result = await _crudService.GetAllAsync();
+            if (!result.Succeeded || result.Value == null)
+            {
+                TempData["Error"] = result.ErrorMessage ?? "Không thể tải danh sách gói tập.";
+                return View(Enumerable.Empty<GoiTap>());
+            }
+
+            var list = result.Value.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var term = q.Trim();
+                list = list.Where(g =>
+                    (!string.IsNullOrWhiteSpace(g.MaGoiTap) && g.MaGoiTap.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrWhiteSpace(g.TenGoi) && g.TenGoi.Contains(term, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            list = (sort, dir) switch
+            {
+                ("code", "desc") => list.OrderByDescending(g => g.MaGoiTap),
+                ("code", "asc") => list.OrderBy(g => g.MaGoiTap),
+                ("duration", "desc") => list.OrderByDescending(g => g.ThoiHan),
+                ("duration", "asc") => list.OrderBy(g => g.ThoiHan),
+                ("price", "desc") => list.OrderByDescending(g => g.Gia),
+                ("price", "asc") => list.OrderBy(g => g.Gia),
+                ("name", "desc") => list.OrderByDescending(g => g.TenGoi),
+                _ => list.OrderBy(g => g.TenGoi)
+            };
+
+            return View(list.ToList());
         }
 
         // GET: GoiTap/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
-            var item = await _context.Subcriptions.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id.Value);
-            if (item == null) return NotFound();
-            return View(item);
+            var result = await _crudService.GetByIdAsync(id.Value);
+            if (!result.Succeeded || result.Value == null) return NotFound();
+            return View(result.Value);
         }
 
         // GET: GoiTap/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
         // POST: GoiTap/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("MaGoiTap,TenGoi,ThoiHan,Gia,MoTa")] GoiTap sub)
+        public async Task<IActionResult> Create([Bind("MaGoiTap,TenGoi,ThoiHan,Gia,MoTa")] GoiTap goiTap)
         {
-            if (!ModelState.IsValid) return View(sub);
-            _context.Subcriptions.Add(sub);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid) return View(goiTap);
+            var result = await _crudService.CreateAsync(goiTap);
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Không thể tạo gói tập.");
+                return View(goiTap);
+            }
             TempData["Success"] = "Thêm gói tập thành công.";
             return RedirectToAction(nameof(Index));
         }
@@ -56,29 +90,27 @@ namespace QLPG_a.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-            var sub = await _context.Subcriptions.FindAsync(id.Value);
-            if (sub == null) return NotFound();
-            return View(sub);
+            var result = await _crudService.GetByIdAsync(id.Value);
+            if (!result.Succeeded || result.Value == null) return NotFound();
+            return View(result.Value);
         }
 
         // POST: GoiTap/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,MaGoiTap,TenGoi,ThoiHan,Gia,MoTa")] GoiTap sub)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,MaGoiTap,TenGoi,ThoiHan,Gia,MoTa")] GoiTap goiTap)
         {
-            if (id != sub.Id) return NotFound();
-            if (!ModelState.IsValid) return View(sub);
-            try
+            if (id != goiTap.Id) return NotFound();
+            if (!ModelState.IsValid) return View(goiTap);
+            var result = await _crudService.UpdateAsync(goiTap);
+            if (!result.Succeeded)
             {
-                _context.Update(sub);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Cập nhật gói tập thành công.";
+                if (result.ErrorCode == ServiceErrorCode.NotFound) return NotFound();
+                ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Không thể cập nhật gói tập.");
+                return View(goiTap);
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SubExists(sub.Id)) return NotFound();
-                throw;
-            }
+
+            TempData["Success"] = "Cập nhật gói tập thành công.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -86,9 +118,9 @@ namespace QLPG_a.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
-            var sub = await _context.Subcriptions.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id.Value);
-            if (sub == null) return NotFound();
-            return View(sub);
+            var result = await _crudService.GetByIdAsync(id.Value);
+            if (!result.Succeeded || result.Value == null) return NotFound();
+            return View(result.Value);
         }
 
         // POST: GoiTap/Delete/5
@@ -96,19 +128,10 @@ namespace QLPG_a.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var sub = await _context.Subcriptions.FindAsync(id);
-            if (sub != null)
-            {
-                _context.Subcriptions.Remove(sub);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Xóa gói tập thành công.";
-            }
+            var result = await _crudService.DeleteAsync(id);
+            if (!result.Succeeded && result.ErrorCode == ServiceErrorCode.NotFound) return NotFound();
+            if (result.Succeeded) TempData["Success"] = "Xóa gói tập thành công.";
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool SubExists(int id)
-        {
-            return _context.Subcriptions.Any(e => e.Id == id);
         }
     }
 }

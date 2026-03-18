@@ -18,9 +18,15 @@
 </head>
 
 <body class="d-flex flex-column min-vh-100 bg-dark text-light">
+    @{
+        var isAuthenticated = User.Identity?.IsAuthenticated == true;
+        var isAdmin = User.IsInRole("Admin");
+        var isMember = User.IsInRole("Member");
+        var displayName = User.Identity?.Name ?? "Tài khoản";
+    }
 
     <header class="mb-4">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary">
+        <nav class="navbar navbar-expand-lg navbar-dark border-bottom border-secondary app-navbar">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-dumbbell fs-4 text-danger" aria-hidden="true"></i>
@@ -37,26 +43,44 @@
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="User" asp-action="Index">Hội viên</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="GoiTap" asp-action="Index">Gói tập</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="DangKyGoi" asp-action="Index">Đăng ký</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="DangKiGois">Gói tập</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="TinTuc">Tin tức</a>
                         </li>
+
+                        @if (isAuthenticated && isAdmin)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="User" asp-action="Index">Người dùng</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="GoiTap" asp-action="Index">Quản lý gói</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="DangKiGoi" asp-action="Index">Đăng ký gói</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-warning" asp-controller="Admin" asp-action="Dashboard">
+                                    <i class="bi bi-shield-lock me-1"></i>Admin
+                                </a>
+                            </li>
+                        }
+
+                        @if (isAuthenticated && isMember)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Member" asp-action="Index">Hội viên</a>
+                            </li>
+                        }
                     </ul>
 
                     <div class="d-flex align-items-center gap-2">
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (isAuthenticated)
                         {
                             <div class="dropdown">
-                                <a class="btn btn-outline-light btn-sm dropdown-toggle" href="#" data-bs-toggle="dropdown">@User.Identity.Name</a>
+                                <a class="btn btn-outline-light btn-sm dropdown-toggle" href="#" data-bs-toggle="dropdown">@displayName</a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Hồ sơ</a></li>
                                     <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">Đăng xuất</a></li>
                                 </ul>
                             </div>
@@ -73,6 +97,29 @@
     </header>
 
     <main class="flex-grow-1">
+        <div class="container mb-3">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show app-alert" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show app-alert" role="alert">
+                    <i class="bi bi-x-circle me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show app-alert" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Warning"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
         @RenderBody()
     </main>
 

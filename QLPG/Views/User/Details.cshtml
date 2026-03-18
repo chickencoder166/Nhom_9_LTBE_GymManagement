@@ -1,13 +1,24 @@
-﻿@{
+﻿@model QLPG_a.Models.User
+@{
     ViewData["Title"] = "Chi tiết hội viên";
 }
 
 <h2>Chi tiết hội viên</h2>
 
+@if (!string.IsNullOrWhiteSpace(Model.AvatarPath))
+{
+    <div class="mb-3">
+        <img src="@Model.AvatarPath" alt="Avatar" style="width:88px;height:88px;object-fit:cover;border-radius:999px;" />
+    </div>
+}
+
 <ul class="list-group">
-    <li class="list-group-item">Mã: 1</li>
-    <li class="list-group-item">Tên: user01</li>
-    <li class="list-group-item">Họ tên: Nguyễn Văn A</li>
+    <li class="list-group-item">Mã: @Model.MembershipNumber</li>
+    <li class="list-group-item">Tên đăng nhập: @Model.UserName</li>
+    <li class="list-group-item">Họ tên: @Model.FullName</li>
+    <li class="list-group-item">SĐT: @Model.Phone</li>
+    <li class="list-group-item">Email: @Model.Email</li>
+    <li class="list-group-item">Vai trò: @Model.Role</li>
 </ul>
 
 <a asp-action="Index" class="btn btn-secondary mt-3">Quay lại</a>

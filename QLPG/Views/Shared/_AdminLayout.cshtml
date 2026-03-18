@@ -26,41 +26,74 @@
             </div>
             <nav class="sidebar-nav">
                 <ul class="nav flex-column">
+                    @{
+                        var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+                        var act  = ViewContext.RouteData.Values["action"]?.ToString();
+                    }
                     <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")" 
-                           asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                        <a class="nav-link @(ctrl == "Admin" && act == "Dashboard" ? "active" : "")"
+                           asp-controller="Admin" asp-action="Dashboard">
                             <i class="fas fa-tachometer-alt"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Subcriptions" ? "active" : "")" 
-                           asp-area="Admin" asp-controller="Subcriptions" asp-action="Index">
-                            <i class="fas fa-box-open"></i>
-                            <span>Quản lý gói tập</span>
-                        </a>
+
+                    <li class="nav-item sidebar-section-label mt-3 ps-3 text-uppercase text-secondary small">
+                        <small>Quản lý</small>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Members" ? "active" : "")" 
-                           asp-area="Admin" asp-controller="Members" asp-action="Index">
+                        <a class="nav-link @(ctrl == "Admin" && act == "Members" ? "active" : "")"
+                           asp-controller="Admin" asp-action="Members">
                             <i class="fas fa-users"></i>
-                            <span>Quản lý hội viên</span>
+                            <span>Hội viên</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "RegisterSubscription" ? "active" : "")" 
-                           asp-area="Admin" asp-controller="RegisterSubscription" asp-action="Index">
+                        <a class="nav-link @(ctrl == "GoiTap" ? "active" : "")"
+                           asp-controller="GoiTap" asp-action="Index">
+                            <i class="fas fa-box-open"></i>
+                            <span>Gói tập</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "DangKiGoi" ? "active" : "")"
+                           asp-controller="DangKiGoi" asp-action="Index">
                             <i class="fas fa-clipboard-list"></i>
-                            <span>Đăng ký gói tập</span>
+                            <span>Đăng ký gói</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Reports" ? "active" : "")" 
-                           asp-area="Admin" asp-controller="Reports" asp-action="Index">
+                        <a class="nav-link @(ctrl == "Admin" && act == "RegisterDangKiGoiTap" ? "active" : "")"
+                           asp-controller="Admin" asp-action="RegisterDangKiGoiTap">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Đăng ký mới</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "User" ? "active" : "")"
+                           asp-controller="User" asp-action="Index">
+                            <i class="fas fa-user-cog"></i>
+                            <span>Tài khoản</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item sidebar-section-label mt-3 ps-3 text-uppercase text-secondary small">
+                        <small>Báo cáo</small>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Admin" && act == "Reports" ? "active" : "")"
+                           asp-controller="Admin" asp-action="Reports">
                             <i class="fas fa-chart-line"></i>
                             <span>Thống kê</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Admin" asp-action="ExportRevenueExcel">
+                            <i class="fas fa-file-excel"></i>
+                            <span>Xuất doanh thu</span>
+                        </a>
+                    </li>
+
                     <li class="nav-item mt-4 pt-4 border-top border-secondary">
                         <a class="nav-link" asp-controller="Home" asp-action="Index">
                             <i class="fas fa-arrow-left"></i>
@@ -74,14 +107,14 @@
         <!-- Main content area -->
         <div class="main-content">
             <!-- Top navbar -->
-            <nav class="navbar navbar-light bg-white shadow-sm px-4">
+            <nav class="navbar navbar-lightbg-dark text-white shadow-sm px-4">
                 <div class="d-flex align-items-center">
                     <button class="btn btn-link d-md-none" id="sidebarToggle">
                         <i class="fas fa-bars"></i>
                     </button>
                     <nav aria-label="breadcrumb" class="mb-0">
                         <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a></li>
+                            <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Dashboard">Admin</a></li>
                             @if (ViewData["Title"] != null && ViewData["Title"]?.ToString() != "Dashboard")
                             {
                                 <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
@@ -93,12 +126,9 @@
                     <button class="btn btn-link text-decoration-none dropdown-toggle" type="button" 
                             id="userDropdown" data-bs-toggle="dropdown">
                         <i class="fas fa-user-circle fa-2x text-primary"></i>
-                        <span class="ms-2 text-dark">Admin User</span>
+                        <span class="ms-2 text-light">@User.Identity?.Name</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fas fa-user"></i> Hồ sơ</a></li>
-                        <li><a class="dropdown-item" asp-controller="Account" asp-action="Settings"><i class="fas fa-cog"></i> Cài đặt</a></li>
-                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                     </ul>
                 </div>
@@ -118,6 +148,13 @@
                 {
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["Warning"] != null)
+                {
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="fas fa-triangle-exclamation"></i> @TempData["Warning"]
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 }

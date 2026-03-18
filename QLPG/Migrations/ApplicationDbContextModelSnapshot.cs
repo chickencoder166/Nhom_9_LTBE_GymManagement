@@ -17,12 +17,12 @@ namespace QLPG_a.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.11")
+                .HasAnnotation("ProductVersion", "8.0.23")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("QLPG_a.Models.DangKyGoi", b =>
+            modelBuilder.Entity("QLPG_a.Models.DangKiGoi", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -34,10 +34,16 @@ namespace QLPG_a.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("GoiTapId")
+                        .HasColumnType("int");
+
                     b.Property<string>("MaDangKy")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("MemberId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("NgayBatDau")
                         .HasColumnType("datetime2");
@@ -45,8 +51,10 @@ namespace QLPG_a.Migrations
                     b.Property<DateTime>("NgayKetThuc")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("SubcriptionId")
-                        .HasColumnType("int");
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<decimal>("TongTien")
                         .HasColumnType("decimal(18,2)");
@@ -55,16 +63,46 @@ namespace QLPG_a.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("UserId")
+                    b.HasKey("Id");
+
+                    b.HasIndex("GoiTapId");
+
+                    b.HasIndex("MemberId");
+
+                    b.ToTable("DangKiGois", (string)null);
+                });
+
+            modelBuilder.Entity("QLPG_a.Models.GoiTap", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Gia")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("MaGoiTap")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("TenGoi")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ThoiHan")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SubcriptionId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("DangKyGois");
+                    b.ToTable("GoiTaps", (string)null);
                 });
 
             modelBuilder.Entity("QLPG_a.Models.Member", b =>
@@ -82,6 +120,7 @@ namespace QLPG_a.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -92,7 +131,7 @@ namespace QLPG_a.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("MembershipPlan")
+                    b.Property<string>("Package")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
@@ -105,40 +144,6 @@ namespace QLPG_a.Migrations
                     b.ToTable("Members");
                 });
 
-            modelBuilder.Entity("QLPG_a.Models.Subcription", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Gia")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("MaGoiTap")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("MoTa")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("TenGoi")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("ThoiHan")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Subcriptions");
-                });
-
             modelBuilder.Entity("QLPG_a.Models.ThongBao", b =>
                 {
                     b.Property<int>("Id")
@@ -148,7 +153,6 @@ namespace QLPG_a.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("LoaiThongBao")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -158,7 +162,6 @@ namespace QLPG_a.Migrations
                         .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("NoiDung")
-                        .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
@@ -181,6 +184,10 @@ namespace QLPG_a.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AvatarPath")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
@@ -207,6 +214,13 @@ namespace QLPG_a.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("PasswordResetExpiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -224,34 +238,37 @@ namespace QLPG_a.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("MembershipNumber")
+                        .IsUnique();
+
                     b.HasIndex("UserName")
                         .IsUnique();
 
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("QLPG_a.Models.DangKyGoi", b =>
+            modelBuilder.Entity("QLPG_a.Models.DangKiGoi", b =>
                 {
-                    b.HasOne("QLPG_a.Models.Subcription", "Subcription")
-                        .WithMany("DangKyGois")
-                        .HasForeignKey("SubcriptionId")
+                    b.HasOne("QLPG_a.Models.GoiTap", "GoiTap")
+                        .WithMany("DangKiGois")
+                        .HasForeignKey("GoiTapId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("QLPG_a.Models.User", "User")
+                    b.HasOne("QLPG_a.Models.Member", "Member")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Subcription");
+                    b.Navigation("GoiTap");
 
-                    b.Navigation("User");
+                    b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("QLPG_a.Models.Subcription", b =>
+            modelBuilder.Entity("QLPG_a.Models.GoiTap", b =>
                 {
-                    b.Navigation("DangKyGois");
+                    b.Navigation("DangKiGois");
                 });
 #pragma warning restore 612, 618
         }

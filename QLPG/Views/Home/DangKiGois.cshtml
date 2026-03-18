@@ -1,0 +1,23 @@
+@model IEnumerable<QLPG_a.Models.GoiTap>
+@{
+    ViewData["Title"] = "Các gói tập";
+}
+
+<h2 class="mb-3">Các gói tập</h2>
+
+<div class="row g-4">
+@foreach (var item in Model)
+{
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">@item.TenGoi</h5>
+                <p class="text-muted mb-2">Mã gói: @item.MaGoiTap</p>
+                <p class="mb-2">Thời hạn: <strong>@item.ThoiHan tháng</strong></p>
+                <p class="mb-2">Giá: <strong>@item.Gia.ToString("N0") VNĐ</strong></p>
+                <p class="card-text">@item.MoTa</p>
+            </div>
+        </div>
+    </div>
+}
+</div>

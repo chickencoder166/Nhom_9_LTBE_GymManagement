@@ -2,7 +2,25 @@
 
 @{
     ViewData["Title"] = "Danh sách gói tập";
-    Layout = "_AdminLayout";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    string sort = (ViewData["Sort"]?.ToString() ?? "name").ToLowerInvariant();
+    string dir = (ViewData["Dir"]?.ToString() ?? "asc").ToLowerInvariant();
+    string query = ViewData["Query"]?.ToString() ?? "";
+
+    string SortLink(string col)
+    {
+        var nextDir = (sort == col && dir == "asc") ? "desc" : "asc";
+        return Url.Action("Index", new { q = query, sort = col, dir = nextDir }) ?? "#";
+    }
+
+    string SortIcon(string col)
+    {
+        if (sort != col) return "<i class='fas fa-sort text-muted ms-1'></i>";
+        return dir == "asc"
+            ? "<i class='fas fa-sort-up ms-1'></i>"
+            : "<i class='fas fa-sort-down ms-1'></i>";
+    }
 }
 
 <nav aria-label="breadcrumb">
@@ -16,19 +34,48 @@
     </ol>
 </nav>
 
-<h2 class="text-light mb-3">Gói tập</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-light mb-0">Gói tập</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createGoiTapModal">
+        <i class="fas fa-plus"></i> Thêm gói tập
+    </button>
+</div>
 
-<a asp-action="Create" class="btn btn-primary mb-3">
-    Thêm gói tập
-</a>
+<form asp-action="Index" method="get" class="row g-2 mb-3">
+    <div class="col-md-6">
+        <input name="q" value="@query" class="form-control" placeholder="Tìm theo mã hoặc tên gói..." />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-light"><i class="fas fa-search"></i> Tìm</button>
+    </div>
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+    </div>
+</form>
 
-<table class="table table-dark table-bordered table-hover">
+<table class="table table-dark table-bordered table-hover align-middle">
     <thead>
         <tr>
-            <th>Mã gói</th>
-            <th>Tên gói</th>
-            <th>Thời hạn (tháng)</th>
-            <th>Giá (VNĐ)</th>
+            <th>
+                <a href="@SortLink("code")" class="text-white text-decoration-none">
+                    Mã gói @Html.Raw(SortIcon("code"))
+                </a>
+            </th>
+            <th>
+                <a href="@SortLink("name")" class="text-white text-decoration-none">
+                    Tên gói @Html.Raw(SortIcon("name"))
+                </a>
+            </th>
+            <th>
+                <a href="@SortLink("duration")" class="text-white text-decoration-none">
+                    Thời hạn (tháng) @Html.Raw(SortIcon("duration"))
+                </a>
+            </th>
+            <th>
+                <a href="@SortLink("price")" class="text-white text-decoration-none">
+                    Giá (VNĐ) @Html.Raw(SortIcon("price"))
+                </a>
+            </th>
             <th style="width:180px">Thao tác</th>
         </tr>
     </thead>
@@ -41,11 +88,98 @@
                 <td>@item.ThoiHan</td>
                 <td>@string.Format("{0:N0}", item.Gia)</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Sửa</a>
+                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editGoiTapModal-@item.Id">
+                        Sửa
+                    </button>
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Xem</a>
                     <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xóa</a>
                 </td>
             </tr>
+
+            <div class="modal fade" id="editGoiTapModal-@item.Id" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content text-dark">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Sửa gói tập - @item.TenGoi</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form asp-action="Edit" method="post">
+                            @Html.AntiForgeryToken()
+                            <div class="modal-body">
+                                <input type="hidden" name="Id" value="@item.Id" />
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Mã gói tập</label>
+                                        <input name="MaGoiTap" value="@item.MaGoiTap" class="form-control" required />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tên gói</label>
+                                        <input name="TenGoi" value="@item.TenGoi" class="form-control" required />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Thời hạn (tháng)</label>
+                                        <input name="ThoiHan" type="number" min="1" value="@item.ThoiHan" class="form-control" required />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Giá (VNĐ)</label>
+                                        <input name="Gia" type="number" min="0" step="1000" value="@item.Gia" class="form-control" required />
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Mô tả</label>
+                                        <textarea name="MoTa" class="form-control" rows="3">@item.MoTa</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         }
     </tbody>
 </table>
+
+<div class="modal fade" id="createGoiTapModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content text-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm gói tập mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Mã gói tập</label>
+                            <input name="MaGoiTap" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tên gói</label>
+                            <input name="TenGoi" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Thời hạn (tháng)</label>
+                            <input name="ThoiHan" type="number" min="1" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Giá (VNĐ)</label>
+                            <input name="Gia" type="number" min="0" step="1000" class="form-control" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Mô tả</label>
+                            <textarea name="MoTa" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Tạo mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QLPG_a.Models
 {
@@ -15,23 +13,22 @@ namespace QLPG_a.Models
 
         [Required]
         [StringLength(100)]
-        [Display(Name = "Tên gói tập")]
+        [Display(Name = "Tên gói")]
         public string TenGoi { get; set; } = string.Empty;
 
         [Required]
+        [Range(1, 24, ErrorMessage = "Thời hạn phải lớn hơn 0 tháng")]
         [Display(Name = "Thời hạn (tháng)")]
         public int ThoiHan { get; set; }
 
-        [Required]
-        [Column(TypeName = "decimal(18,2)")]
-        [Display(Name = "Giá gói (VNĐ)")]
+        [Range(typeof(decimal), "0.01", "999999999", ErrorMessage = "Giá gói phải lớn hơn 0")]
+        [Display(Name = "Giá")]
         public decimal Gia { get; set; }
 
         [StringLength(1000)]
         [Display(Name = "Mô tả")]
-        public string MoTa { get; set; } = string.Empty;
+        public string? MoTa { get; set; }
 
-        // Navigation: danh sách đăng ký gói sử dụng gói này
-        public ICollection<DangKyGoi>? DangKyGois { get; set; }
+        public ICollection<DangKiGoi> DangKiGois { get; set; } = new List<DangKiGoi>();
     }
 }

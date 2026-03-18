@@ -4,7 +4,9 @@
 }
 
 <h2>Thêm hội viên</h2>
-<form asp-action="Create" method="post">
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="mb-3">
         <label class="form-label">Mã</label>
         <input asp-for="MembershipNumber" class="form-control" />
@@ -33,6 +35,11 @@
     <div class="mb-3">
         <label class="form-label">Email</label>
         <input asp-for="Email" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Ảnh đại diện</label>
+        <input asp-for="AvatarFile" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp" />
+        <span asp-validation-for="AvatarFile" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label class="form-label">Vai trò</label>
